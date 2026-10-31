@@ -232,6 +232,13 @@ a:hover { text-decoration: underline; }
 .pin.active svg path { stroke: #1d1d1f; }
 .card.flash { animation: cardFlash 1.1s ease; }
 @keyframes cardFlash { 0%,100% { background: var(--bg-elevated); } 30% { background: #e8f1ff; } }
+
+/* ── 多选项卡片（一个点位多个备选，点 chip 切换，地图跟着换路线）── */
+.opts { display:flex; gap:6px; overflow-x:auto; margin:8px 0 6px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.opts::-webkit-scrollbar { display:none; }
+.opt { flex:0 0 auto; padding:6px 11px; border-radius:999px; border:0; font-size:13px; background:var(--bg-grouped); color:var(--text-secondary); }
+.opt.on { background:var(--accent); color:#fff; font-weight:500; }
+.pick-hint { margin-left:6px; font-size:11px; color:var(--text-tertiary); font-weight:400; }
 </style>
 </head>
 <body>
@@ -253,17 +260,32 @@ const DAYS = [
     { name: '景星名苑（出发）', lat: 22.801060, lng: 113.875019, type: 'transport', time: '08:30',
       desc: '深圳宝安高田大道 126 号',
       detail: '出发前备好：烧烤碳、烧烤食材、儿童安全座椅、阿衡奶粉/尿布/推车、换洗衣服。' },
-    { name: '佛冈碧桂园清泉城（别墅）', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '11:00',
-      desc: '173km · 约 2.5 小时 · 过路费约 ¥95 · 入住',
+    { name: '午餐（佛冈）', lat: 23.867469, lng: 113.577960, type: 'food', time: '11:10',
+      desc: '下高速先吃饭，吃完再进别墅',
+      options: [
+        { name: '祥辉餐厅·三八鸡粥（总店）', lat: 23.867469, lng: 113.577960,
+          desc: '106 国道边 · 佛冈最出名的三八鸡粥 · 13642538878 · 吃完到别墅 7km/13 分钟',
+          dianpingKeyword: '祥辉餐厅 三八鸡粥 佛冈' },
+        { name: '祥辉餐厅（佛冈店）', lat: 23.868490, lng: 113.527865,
+          desc: '环城中路 65 号 · 13927672825',
+          dianpingKeyword: '祥辉餐厅 佛冈' },
+        { name: '缘中园·驰名三八鸡粥', lat: 23.871403, lng: 113.573829,
+          desc: '石角镇三八村上里大桥北 · 0763-4382786',
+          dianpingKeyword: '缘中园 三八鸡粥' },
+        { name: '绿禾农庄·特色农家菜', lat: 23.742211, lng: 113.490049,
+          desc: '汤塘镇 S354 省道 · 18029755027 · 到别墅 26km/39 分钟',
+          dianpingKeyword: '绿禾农庄 佛冈' },
+        { name: '到店再找', lat: 23.856000, lng: 113.620000,
+          desc: '佛冈县城随便找一家，看现场' }
+      ] },
+    { name: '佛冈碧桂园清泉城（别墅）', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '13:00',
+      desc: '入住放行李 · 距三八鸡粥 7km/13 分钟',
       budget: '过路费 ¥95 + 油费约 ¥100' },
-    { name: '午餐（到佛冈再找）', lat: 23.853000, lng: 113.625000, type: 'food', time: '12:00',
-      desc: '佛冈县城/清泉城周边，看现场再定',
-      dianpingKeyword: '佛冈 美食' },
     { name: '别墅午休', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '14:00',
-      desc: '阿衡睡觉，大人也补一觉' },
+      desc: '阿衡睡觉，大人补觉' },
     { name: '别墅烧烤（晚餐）', lat: 23.855065, lng: 113.620329, type: 'food', time: '18:00',
       desc: '碳和食材出发前备好',
-      detail: '清单：烧烤碳、引火酒精块/喷枪、夹子、锡纸、一次性手套、调料（盐/孜然/辣椒粉/烧烤汁）、肉串、鸡翅、玉米、茄子、生菜、饮料、垃圾袋。' },
+      detail: '采购清单：烧烤碳、引火酒精块、夹子、锡纸、一次性手套、盐/孜然/辣椒粉/烧烤汁、肉串、鸡翅、玉米、茄子、生菜、饮料、垃圾袋。' },
     { name: '泡温泉 · 自由活动', lat: 23.856856, lng: 113.622460, type: 'spot', time: '20:00',
       desc: '温泉/园区散步，早点休息' }
   ] },
@@ -387,6 +409,23 @@ if (HOTEL.lat) L.marker([HOTEL.lat, HOTEL.lng], { icon: icon('#ff9500','hotel'),
 let markers = [], polylines = [];
 const emojis = { food:'🍽️', spot:'📍', hotel:'🏨', transport:'🚃', drink:'🍺' };
 
+const CH = {};                              // 每个点位的当前选择（多选项卡片）
+function chKey(day, li) { return day + ':' + li; }
+function chosen(l, dayIdx, li) {
+  if (!l.options || !l.options.length) return l;
+  const oi = CH[chKey(dayIdx, li)] || 0;
+  return Object.assign({}, l, l.options[oi] || l.options[0]);
+}
+function pickOpt(dayIdx, li, oi) {
+  CH[chKey(dayIdx, li)] = oi;
+  showDay(dayIdx);                                   // 重画地图（图钉换到新选项、路线重算）
+  document.getElementById('content').innerHTML = renderDay(dayIdx);
+  highlightMarker(li, false);                        // 新选项的图钉高亮
+  const day = DAYS.find(d => d.id === dayIdx);
+  const l = day && day.locations[li] && chosen(day.locations[li], dayIdx, li);
+  if (l && l.lat) map.flyTo([l.lat, l.lng], Math.max(map.getZoom(), 13), { duration: .5 });
+  flashCard(dayIdx, (l && l.name) || '');
+}
 let curDayMarkers = [];
 function highlightMarker(li, fly) {
   curDayMarkers.forEach((m, i) => {
@@ -427,11 +466,12 @@ function showDay(idx) {
   if(!day) return;
   const coords = [];
   curDayMarkers = [];
-  day.locations.forEach((l, li) => {
+  day.locations.forEach((l0, li) => {
+    const l = chosen(l0, idx, li);
     if(!l.lat) return;
     const m = L.marker([l.lat,l.lng], { icon: icon(day.color, l.type) }).addTo(map);
     m.__loc = l; m.__idx = li;
-    m.on('click', () => { highlightMarker(li); flashCard(idx, l.name); });
+    m.on('click', () => { highlightMarker(li); flashCard(idx, l0.name); });
     const gmapQ = l.gmap||encodeURIComponent(l.name+' Tokyo');
     m.bindPopup(`<b>${l.name}</b>${l.time!=='—'?'<br><span style="color:#86868b">'+l.time+'</span>':''}<br>${l.desc}${l.budget?'<br><span style="color:#ff9500">'+l.budget+'</span>':''}<br><a href="#" onclick="event.preventDefault();openAS('${l.name.replace(/'/g,"\\'")}',${l.lat},${l.lng},'${gmapQ}')">📍 导航</a>${l.xhs?' · <a href="'+l.xhs+'" target="_blank">📕 小红书</a>':''}`);
     markers.push(m); curDayMarkers[li] = m;
@@ -488,27 +528,31 @@ function openExt(key, kind) {
 function openXhs(key) { return openExt(key, 'xhs'); }
 function openDp(key)  { return openExt(key, 'dp'); }
 
-function locCard(loc, dayIdx) {
+function locCard(loc0, dayIdx, li) {
+  const loc = chosen(loc0, dayIdx, li);
   const dot = loc.type==='food'?'food':loc.type==='spot'?'spot':loc.type==='drink'?'drink':loc.type==='hotel'?'hotel':'transport';
   const bdg = loc.type==='food'?'<span class="badge food">餐</span>':loc.type==='spot'?'<span class="badge spot">景</span>':loc.type==='drink'?'<span class="badge drink">饮</span>':'';
-  const uid = `d${dayIdx}-${loc.name.replace(/\W/g,'')}`;
-  const locKey = `${dayIdx}::${loc.name}`;
+  const uid = `d${dayIdx}-${(loc0.name||'').replace(/\W/g,'')}`;
+  const locKey = `${dayIdx}::${(loc0.name||'')}`;
   const gmapQ = loc.gmap||encodeURIComponent(loc.name+' Tokyo');
+  const oi = CH[chKey(dayIdx, li)] || 0;
+  const chips = (loc0.options && loc0.options.length>1)
+    ? `<div class="opts">${loc0.options.map((o,k)=>`<button class="opt${k===oi?' on':''}" onclick="event.stopPropagation();pickOpt(${dayIdx},${li},${k})">${o.name}</button>`).join('')}</div>`
+    : '';
   let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
   if(loc.xhs||loc.xhsKeyword) {
     const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
     const xhsLabel = IN_APP_WEBVIEW ? '📕 小红书' : '📕 小红书 App';
     lnk += `<a href="${xhsHref}" onclick="return openXhs('${locKey.replace(/'/g,"\\'")}')" class="btn xhs">${xhsLabel}</a>`;
   }
-  const dpEnabled = loc.dianping !== false &&
-    (loc.dianping || loc.dianpingKeyword || loc.type==='food' || loc.type==='drink');
+  const dpEnabled = loc.dianping !== false && (loc.dianping || loc.dianpingKeyword || loc.type==='food' || loc.type==='drink');
   if(dpEnabled) {
     const dpHref = IN_APP_WEBVIEW ? dpWebUrl(loc) : dpAppUrl(loc);
     const dpLabel = IN_APP_WEBVIEW ? '🍜 大众点评' : '🍜 大众点评 App';
     lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${dpLabel}</a>`;
   }
   if(loc.reserve) lnk += `<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
-  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links')){toggle('${uid}');focusLoc(${dayIdx},${loc.__idx!==undefined?loc.__idx:'-'});}"><div class="time">${loc.time!=='—'?loc.time:'备选'}</div><div class="name">${bdg} ${loc.name}</div><div class="desc">${loc.desc}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
+  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links,.opt')){toggle('${uid}');focusLoc(${dayIdx},${li});}"><div class="time">${(loc0.time!=='—')?loc0.time:'备选'}</div><div class="name">${bdg} ${loc0.name}${loc0.options&&loc0.options.length>1?'<span class="pick-hint">可切换</span>':''}</div>${chips}<div class="desc">${loc.desc||''}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
 }
 
 function renderDay(idx) {
@@ -516,8 +560,8 @@ function renderDay(idx) {
   const main = d.locations.filter(l=>l.time!=='—');
   const alt = d.locations.filter(l=>l.time==='—');
   let h = `<div class="day-head"><h2>${d.title}</h2><p>${d.date}</p></div>`;
-  if(main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach(l => { l.__idx = d.locations.indexOf(l); h += locCard(l, idx); }); h += '</div>'; }
-  if(alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach(l => { l.__idx = d.locations.indexOf(l); h += locCard(l, idx); }); h += '</div>'; }
+  if(main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach((l,i) => { h += locCard(l, idx, d.locations.indexOf(l)); }); h += '</div>'; }
+  if(alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach((l,i) => { h += locCard(l, idx, d.locations.indexOf(l)); }); h += '</div>'; }
   return h;
 }
 
