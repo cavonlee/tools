@@ -151,6 +151,9 @@ a:hover { text-decoration: underline; }
 .pay.no  { background: rgba(255,59,48,.08); color: var(--tint-red); }
 .pay.idk { background: rgba(255,149,0,.1);  color: var(--tint-orange); }
 
+.tabs-row { display:flex; align-items:center; gap:8px; padding: 4px 12px 0; }
+.tabs-row .tabs { flex:1; }
+
 /* Links row */
 /* 卡片左右结构：左内容 / 右按钮（长条，SVG 图标 + 文字） */
 .card-main { display: flex; gap: 10px; align-items: flex-start; }
@@ -259,12 +262,29 @@ a:hover { text-decoration: underline; }
   font-size: 14px; border-radius: 8px; color: var(--text-primary); }
 .dd-item.on { background: var(--bg-grouped); font-weight: 600; }
 .dd-add { color: var(--accent); }
+
+/* ── 段间车程（地图上两点之间）── */
+.leg { display: flex; align-items: center; gap: 8px; padding: 2px 0 2px 14px; }
+.leg-line { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--text-tertiary) 0 4px, transparent 4px 8px); opacity: .55; }
+.leg-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
+  background: var(--bg-elevated); border: 1px solid #e5e5ea; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+.leg-pill svg { width: 14px; height: 14px; }
+.settings-btn { margin-left: 8px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--bg-elevated);
+  box-shadow: 0 1px 4px rgba(0,0,0,.12); display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+.settings-btn svg { width: 18px; height: 18px; }
+.sheet { position: fixed; inset: 0; z-index: 9998; background: rgba(0,0,0,.35); display: none; align-items: flex-end; }
+.sheet.show { display: flex; }
+.sheet-box { width: 100%; background: #fff; border-radius: 16px 16px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+.sheet-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+.mode-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.mode-opt { padding: 9px 14px; border-radius: 10px; background: var(--bg-grouped); border: 0; font-size: 14px; }
+.mode-opt.on { background: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
 
 <div id="map"></div>
-<div class="tabs" id="tabs"></div>
+<div class="tabs-row"><div class="tabs" id="tabs"></div><button class="settings-btn" onclick="openSettings()" aria-label="设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
 <div class="content" id="content"></div>
 
 <script>window._AMapSecurityConfig={securityJsCode:'b84637843f2db6b18cb36973d1e1b833'};</script>
@@ -441,6 +461,14 @@ if (HOTEL.lat) L.marker([HOTEL.lat, HOTEL.lng], { icon: icon('#ff9500','hotel'),
 let markers = [], polylines = [];
 const emojis = { food:'🍽️', spot:'📍', hotel:'🏨', transport:'🚃', drink:'🍺' };
 
+const LEGS = {"1:1": {"drive": [167.1, 145], "walk": [null, null]}, "1:2": {"drive": [7.1, 15], "walk": [7.0, 93]}, "1:3": {"drive": [0, 0], "walk": [0, 0]}, "2:1": {"drive": [6.6, 16], "walk": [6.1, 81]}, "2:2": {"drive": [2.2, 13], "walk": [0.1, 1]}, "2:3": {"drive": [6.1, 12], "walk": [6.1, 81]}, "3:1": {"drive": [148.3, 154], "walk": [null, null]}, "3:2": {"drive": [6.5, 24], "walk": [6.2, 82]}, "3:3": {"drive": [6.2, 24], "walk": [5.7, 76]}, "3:4": {"drive": [1.0, 9], "walk": [0.9, 12]}, "3:5": {"drive": [4.4, 20], "walk": [3.7, 49]}, "4:1": {"drive": [6.6, 23], "walk": [3.8, 50]}, "4:2": {"drive": [4.3, 22], "walk": [4.3, 57]}, "4:3": {"drive": [81.5, 94], "walk": [114.9, 1532]}};   // 每段车程（离线用高德 Web服务算好，页面不调 key）
+const MODE_KEY = 'tripMapMode';
+const MODES = { drive:{label:'自驾',icon:'<path d="M4 16.5h16"/><path d="M5.6 16.5 4.4 11.4 6.2 6.5h11.6l1.8 4.9-1.2 5.1"/><circle cx="7.6" cy="17.8" r="1.6"/><circle cx="16.4" cy="17.8" r="1.6"/>'},
+  taxi:{label:'打车',icon:'<path d="M4 16.5h16"/><path d="M5.6 16.5 4.4 11.4 6.2 6.5h11.6l1.8 4.9-1.2 5.1"/><circle cx="7.6" cy="17.8" r="1.6"/><circle cx="16.4" cy="17.8" r="1.6"/><path d="M11 4h2v2.5h-2z"/>'},
+  walk:{label:'步行',icon:'<circle cx="13" cy="4.6" r="1.8"/><path d="M12 8v5l3 3"/><path d="M12 13 9 18"/><path d="M12 8 9 10"/>'},
+  bus:{label:'公交',icon:'<rect x="5" y="4" width="14" height="12" rx="2"/><path d="M5 10h14"/><circle cx="8.5" cy="18" r="1.4"/><circle cx="15.5" cy="18" r="1.4"/>'} };
+function defMode(){ try { return localStorage.getItem(MODE_KEY) || 'drive'; } catch(e) { return 'drive'; } }
+let legMode = {};                                        // 每段临时切换（不落盘）
 const CH = {};                              // 每个点位的当前选择（多选项卡片）
 function chKey(day, li) { return day + ':' + li; }
 function chosen(l, dayIdx, li) {
@@ -651,12 +679,39 @@ function locCard(loc0, dayIdx, li) {
   </div></div>`;
 }
 
+function legInfo(dayIdx, li) {
+  const key = dayIdx + ':' + li;
+  const d = LEGS[key];
+  if (!d) return '';
+  const m = legMode[key] || defMode();
+  const data = (m === 'walk') ? d.walk : d.drive;
+  if (!data || data[0] === null) return '';
+  const km = data[0], min = data[1];
+  const timeTxt = min >= 60 ? `${Math.floor(min/60)} 小时${min%60?(' '+min%60+' 分'):''}` : `${min} 分钟`;
+  if (km === 0) return '';
+  return `<div class="leg" onclick="event.stopPropagation()">
+    <span class="leg-line"></span>
+    <button class="leg-pill" onclick="cycleMode(${dayIdx},${li})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${MODES[m].icon}</svg>
+      <span>${MODES[m].label} ${km}km · ${timeTxt}</span>
+    </button>
+    <span class="leg-line"></span>
+  </div>`;
+}
+function cycleMode(dayIdx, li) {
+  const order = ['drive','taxi','walk'];
+  const key = dayIdx + ':' + li;
+  const cur = legMode[key] || defMode();
+  legMode[key] = order[(order.indexOf(cur) + 1) % order.length];
+  reRenderDay(dayIdx);
+  const y = window.scrollY; window.scrollTo(0, y);
+}
 function renderDay(idx) {
   const d = DAYS.find(x=>x.id===idx); if(!d) return '';
   const main = d.locations.filter(l=>l.time!=='—');
   const alt = d.locations.filter(l=>l.time==='—');
   let h = `<div class="day-head"><h2>${d.title}</h2><p>${d.date}</p></div>`;
-  if(main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach((l,i) => { h += locCard(l, idx, d.locations.indexOf(l)); }); h += '</div>'; }
+  if(main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach((l,i) => { const li = d.locations.indexOf(l); if (i>0) h += legInfo(idx, li); h += locCard(l, idx, li); }); h += '</div>'; }
   if(alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach((l,i) => { h += locCard(l, idx, d.locations.indexOf(l)); }); h += '</div>'; }
   return h;
 }
@@ -729,6 +784,24 @@ function openAS(name, lat, lng, gmap) {
   asOverlay.classList.add('show');
 }
 function closeAS() { asOverlay.classList.remove('show'); }
+</script>
+<div class="sheet" id="settingsSheet" onclick="if(event.target===this)closeSettings()">
+  <div class="sheet-box">
+    <div class="sheet-title">默认交通方式</div>
+    <div class="mode-opts" id="modeOpts"></div>
+    <div class="sheet-title" style="margin-top:16px">说明</div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">默认用于所有段；点每段的胶囊可单独切换。数据按自驾/步行实测，打车同自驾。</div>
+  </div>
+</div>
+<script>
+function openSettings(){
+  const box=document.getElementById('modeOpts');
+  const cur=defMode();
+  box.innerHTML=['drive','taxi','walk'].map(m=>`<button class="mode-opt ${m===cur?'on':''}" onclick="setMode('${m}')">${MODES[m].label}</button>`).join('');
+  document.getElementById('settingsSheet').classList.add('show');
+}
+function closeSettings(){ document.getElementById('settingsSheet').classList.remove('show'); }
+function setMode(m){ try{ localStorage.setItem(MODE_KEY,m); }catch(e){} legMode={}; closeSettings(); reRenderDay(cur); }
 </script>
 </body>
 </html>
