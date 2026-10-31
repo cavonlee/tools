@@ -56,7 +56,7 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* ── Map ── */
-#map { width: 100%; height: 40vh; min-height: 280px; position: sticky; top: 0; z-index: 100; }
+#map { width: 100%; height: 40svh; min-height: 260px; max-height: 420px; position: sticky; top: 0; z-index: 100; }
 .locate-btn {
   width: 36px; height: 36px; border-radius: 8px;
   background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
@@ -77,10 +77,8 @@ a:hover { text-decoration: underline; }
 
 /* ── Tabs ── */
 .tabs {
-  display: flex; gap: 6px; padding: 12px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch;
-  background: rgba(255,255,255,.85); -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px); position: sticky; top: 40vh; z-index: 99;
-  border-bottom: .5px solid var(--separator); scrollbar-width: none;
+  display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tab {
@@ -93,7 +91,7 @@ a:hover { text-decoration: underline; }
 .tab.active { background: var(--accent); color: #fff; }
 
 /* ── Main content ── */
-.content { max-width: 680px; margin: 0 auto; padding: 16px 16px calc(24px + var(--safe-bottom)); }
+.content { max-width: 680px; margin: 0 auto; padding: 16px 16px calc(84px + var(--safe-bottom)); }
 
 /* ── Overview ── */
 .hero { text-align: center; padding: 28px 20px 20px; }
@@ -151,7 +149,10 @@ a:hover { text-decoration: underline; }
 .pay.no  { background: rgba(255,59,48,.08); color: var(--tint-red); }
 .pay.idk { background: rgba(255,149,0,.1);  color: var(--tint-orange); }
 
-.tabs-row { display:flex; align-items:center; gap:8px; padding: 4px 12px 0; }
+.tabs-row { position: fixed; left: 0; right: 0; bottom: 0; z-index: 300;
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,.94); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  border-top: .5px solid var(--separator); }
 .tabs-row .tabs { flex:1; }
 
 /* Links row */
@@ -269,6 +270,9 @@ a:hover { text-decoration: underline; }
 .leg-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
   background: var(--bg-elevated); border: 1px solid #e5e5ea; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
 .leg-pill svg { width: 14px; height: 14px; }
+.leg-set { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #e5e5ea; background: var(--bg-elevated);
+  display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+.leg-set svg { width: 15px; height: 15px; }
 .settings-btn { margin-left: 8px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--bg-elevated);
   box-shadow: 0 1px 4px rgba(0,0,0,.12); display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); }
 .settings-btn svg { width: 18px; height: 18px; }
@@ -284,7 +288,7 @@ a:hover { text-decoration: underline; }
 <body>
 
 <div id="map"></div>
-<div class="tabs-row"><div class="tabs" id="tabs"></div><button class="settings-btn" onclick="openSettings()" aria-label="设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+<div class="tabs-row"><div class="tabs" id="tabs"></div></div>
 <div class="content" id="content"></div>
 
 <script>window._AMapSecurityConfig={securityJsCode:'b84637843f2db6b18cb36973d1e1b833'};</script>
@@ -683,19 +687,22 @@ function legInfo(dayIdx, li) {
   const key = dayIdx + ':' + li;
   const d = LEGS[key];
   if (!d) return '';
-  const m = legMode[key] || defMode();
-  const data = (m === 'walk') ? d.walk : d.drive;
+  let m = legMode[key] || defMode();
+  let data = (m === 'walk') ? d.walk : d.drive;
+  if (!data || data[0] === null) { data = d.drive; m = 'drive'; }   // 没有该方式数据时退回自驾
   if (!data || data[0] === null) return '';
   const km = data[0], min = data[1];
   const timeTxt = min >= 60 ? `${Math.floor(min/60)} 小时${min%60?(' '+min%60+' 分'):''}` : `${min} 分钟`;
   if (km === 0) return '';
   return `<div class="leg" onclick="event.stopPropagation()">
     <span class="leg-line"></span>
-    <button class="leg-pill" onclick="cycleMode(${dayIdx},${li})">
+    <span class="leg-pill">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${MODES[m].icon}</svg>
       <span>${MODES[m].label} ${km}km · ${timeTxt}</span>
+    </span>
+    <button class="leg-set" onclick="openLegSettings(${dayIdx},${li})" aria-label="交通方式设置">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
-    <span class="leg-line"></span>
   </div>`;
 }
 function cycleMode(dayIdx, li) {
@@ -785,23 +792,40 @@ function openAS(name, lat, lng, gmap) {
 }
 function closeAS() { asOverlay.classList.remove('show'); }
 </script>
-<div class="sheet" id="settingsSheet" onclick="if(event.target===this)closeSettings()">
+<div class="sheet" id="legSheet" onclick="if(event.target===this)closeLegSheet()">
   <div class="sheet-box">
-    <div class="sheet-title">默认交通方式</div>
-    <div class="mode-opts" id="modeOpts"></div>
-    <div class="sheet-title" style="margin-top:16px">说明</div>
-    <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">默认用于所有段；点每段的胶囊可单独切换。数据按自驾/步行实测，打车同自驾。</div>
+    <div class="sheet-title">这一段怎么走？</div>
+    <div class="mode-opts" id="legModes"></div>
+    <button class="mode-default" id="legDefaultBtn" onclick="setLegAsDefault()">把选中的设为默认</button>
   </div>
 </div>
 <script>
-function openSettings(){
-  const box=document.getElementById('modeOpts');
-  const cur=defMode();
-  box.innerHTML=['drive','taxi','walk'].map(m=>`<button class="mode-opt ${m===cur?'on':''}" onclick="setMode('${m}')">${MODES[m].label}</button>`).join('');
-  document.getElementById('settingsSheet').classList.add('show');
+let _legTarget = null;
+function openLegSettings(dayIdx, li){
+  _legTarget = [dayIdx, li];
+  const key = dayIdx + ':' + li;
+  const curMode = legMode[key] || defMode();
+  const box = document.getElementById('legModes');
+  box.innerHTML = ['drive','taxi','walk'].map(m =>
+    `<button class="mode-opt ${m===curMode?'on':''}" data-m="${m}" onclick="pickLegMode('${m}')">${MODES[m].label}</button>`).join('');
+  document.getElementById('legSheet').classList.add('show');
 }
-function closeSettings(){ document.getElementById('settingsSheet').classList.remove('show'); }
-function setMode(m){ try{ localStorage.setItem(MODE_KEY,m); }catch(e){} legMode={}; closeSettings(); reRenderDay(cur); }
+function closeLegSheet(){ document.getElementById('legSheet').classList.remove('show'); }
+function pickLegMode(m){
+  const [d, li] = _legTarget || [];
+  if (d == null) return;
+  legMode[d + ':' + li] = m;
+  document.querySelectorAll('#legModes .mode-opt').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  reRenderDay(cur);
+  closeLegSheet();
+}
+function setLegAsDefault(){
+  const active = document.querySelector('#legModes .mode-opt.on');
+  const m = active ? active.dataset.m : 'drive';
+  try { localStorage.setItem(MODE_KEY, m); } catch(e) {}
+  closeLegSheet();
+  reRenderDay(cur);
+}
 </script>
 </body>
 </html>
