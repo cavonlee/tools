@@ -309,6 +309,16 @@ a:hover { text-decoration: underline; }
 html, body { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .card, .leg-pill, .btn, .dd-btn, .opt, .tab { touch-action: manipulation; }
 input, textarea { -webkit-user-select: text; user-select: text; }
+
+.nav-head { min-width:0; }
+.nav-title { font-size:16px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nav-addr { font-size:12px; color:var(--text-tertiary); margin-top:2px; }
+.nav-opts { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+.nav-opt { display:flex; align-items:center; gap:10px; padding:13px 14px; border-radius:12px; border:0;
+  background:var(--bg-grouped); font-size:15px; color:var(--text-primary); text-align:left; }
+.nav-opt .nav-ico { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; color:var(--accent); }
+.nav-opt .nav-ico svg { width:22px; height:22px; }
+.nav-opt em { display:block; font-style:normal; font-size:11.5px; color:var(--text-tertiary); margin-top:1px; }
 </style>
 </head>
 <body>
@@ -699,7 +709,7 @@ function locCard(loc0, dayIdx, li) {
   const ICON_NAV  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 21 3l-8.5 18-2.2-7.3z"/></svg>';
   const ICON_DP   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v7a2.5 2.5 0 0 0 5 0V4"/><path d="M6.5 12v8"/><path d="M18.5 4c-1.8 1.1-2.8 3.3-2.8 5.8V12h2.8z"/><path d="M16.5 12v8"/></svg>';
   const ICON_XHS  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5z"/><path d="M8 8h8M8 12h8"/></svg>';
-  let lnk = `<button class="btn nav" onclick="navTo('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng});navGuard('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng})">${ICON_NAV}<span>导航</span></button>`;
+  let lnk = `<button class="btn nav" onclick="openNavSheet('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng})">${ICON_NAV}<span>导航</span></button>`;
   if(loc.xhs||loc.xhsKeyword) {
     const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
     lnk += `<a href="${xhsHref}" onclick="return openXhs('${locKey.replace(/'/g,"\\'")}')" class="btn xhs">${ICON_XHS}<span>小红书</span></a>`;
@@ -922,30 +932,47 @@ function openAmap(name, lat, lng) {
   window.location.href = amapAppUrl(name, lat, lng);
 }
 
-function navTo(name, lat, lng) {
-  const enc = encodeURIComponent(name || '目的地');
-  const ua = (navigator.userAgent || '');
+let _nav = null;
+function openNavSheet(name, lat, lng) {
+  _nav = { name: name || '目的地', lat, lng };
+  document.getElementById('navTitle').textContent = _nav.name;
+  document.getElementById('navAddr').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  document.getElementById('navSheet').classList.add('show');
+}
+function closeNavSheet() { document.getElementById('navSheet').classList.remove('show'); }
+/* 调起某个地图 App；失败/没装 → 回退网页 */
+function openMapApp(kind) {
+  if (!_nav) return;
+  const { name, lat, lng } = _nav;
+  const ua = navigator.userAgent || '';
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  // 依次尝试：高德 App 直接导航 → 系统地图选择器 → 高德 universal link（仍在 App 内）
-  const tries = isIOS ? [
-    `iosamap://path?sourceApplication=pudding&dlat=${lat}&dlon=${lng}&dname=${enc}&dev=0&t=0`,
-    `maps://?q=${lat},${lng}&name=${name || ''}`,
-    `https://uri.amap.com/navigation?to=${lng},${lat},${enc}&mode=car&callnative=1`
-  ] : [
-    `amapuri://route/plan/?sourceApplication=pudding&dlat=${lat}&dlon=${lng}&dname=${enc}&dev=0&t=0`,
-    `geo:${lat},${lng}?q=${lat},${lng}(${name || ''})`,
-    `https://uri.amap.com/navigation?to=${lng},${lat},${enc}&mode=car&callnative=1`
-  ];
-  let i = 0, cancelled = false;
-  const onHide = () => { if (document.visibilityState === 'hidden') cancelled = true; };
+  const isHarmony = /OpenHarmony|HarmonyOS|ArkWeb/i.test(ua);
+  const isAndroid = /Android/i.test(ua) || isHarmony;
+  const N = encodeURIComponent(name);
+  let url = '';
+  if (kind === 'system') {
+    url = isIOS ? `maps://?q=${lat},${lng}&name=${name}` : `geo:${lat},${lng}?q=${lat},${lng}(${name})`;
+  } else if (kind === 'amap') {
+    url = isIOS ? `iosamap://path?sourceApplication=pudding&dlat=${lat}&dlon=${lng}&dname=${N}&dev=0&t=0`
+                : `amapuri://route/plan/?sourceApplication=pudding&dlat=${lat}&dlon=${lng}&dname=${N}&dev=0&t=0`;
+  } else if (kind === 'tencent') {
+    url = `qqmap://map/routeplan?type=drive&tocoord=${lat},${lng}&to=${N}&policy=0&referer=pudding`;
+  } else if (kind === 'baidu') {
+    url = `baidumap://map/direction?destination=latlng:${lat},${lng}|name:${N}&coord_type=gcj02&mode=driving`;
+  }
+  closeNavSheet();
+  const fallback = kind === 'system'
+    ? (isIOS ? `https://maps.apple.com/?q=${lat},${lng}&name=${N}` : `https://uri.amap.com/marker?position=${lng},${lat}&name=${N}`)
+    : (kind === 'baidu' ? `https://api.map.baidu.com/direction?destination=latlng:${lat},${lng}|name:${N}&mode=driving&coord_type=gcj02&output=html&src=pudding`
+                        : `https://uri.amap.com/navigation?to=${lng},${lat},${N}&mode=car&callnative=1`);
+  let left = false;
+  const onHide = () => { if (document.visibilityState === 'hidden') left = true; };
   document.addEventListener('visibilitychange', onHide);
-  const step = () => {
-    if (cancelled || i >= tries.length) return;
-    const u = tries[i++];
-    try { window.location.href = u; } catch (e) {}
-    setTimeout(step, 800);
-  };
-  step();
+  try { window.location.href = url; } catch (e) {}
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', onHide);
+    if (!left && document.visibilityState === 'visible') window.location.href = fallback;
+  }, 1200);
 }
 /* 若系统没拉起任何导航 App（页面还可见），退回应用内选择器兜底 */
 function navGuard(name, lat, lng) {
@@ -971,6 +998,21 @@ function openAS(name, lat, lng, gmap) {
 }
 function closeAS() { asOverlay.classList.remove('show'); }
 </script>
+
+<div class="sheet" id="navSheet" onclick="if(event.target===this)closeNavSheet()">
+  <div class="sheet-box">
+    <div class="leg-sheet-head">
+      <div class="nav-head"><div class="nav-title" id="navTitle">目的地</div><div class="nav-addr" id="navAddr"></div></div>
+      <button class="sheet-close" onclick="closeNavSheet()" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="nav-opts">
+      <button class="nav-opt" onclick="openMapApp('system')"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span><span>系统地图<em>安卓/鸿蒙/苹果 自带</em></span></button>
+      <button class="nav-opt" onclick="openMapApp('amap')"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span><span>高德地图</span></button>
+      <button class="nav-opt" onclick="openMapApp('tencent')"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z"/><path d="M9 4v13M15 6.5v12.5"/></svg></span><span>腾讯地图</span></button>
+      <button class="nav-opt" onclick="openMapApp('baidu')"><span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8.4 18h5.1a3.5 3.5 0 0 0 0-7h-3a3.5 3.5 0 0 1 0-7h5.1"/></svg></span><span>百度地图</span></button>
+    </div>
+  </div>
+</div>
 
 <div class="sheet" id="legSheet" onclick="if(event.target===this)closeLegSheet()">
   <div class="sheet-box">
