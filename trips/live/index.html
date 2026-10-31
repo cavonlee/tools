@@ -690,11 +690,6 @@ function locCard(loc0, dayIdx, li) {
     const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
     lnk += `<a href="${xhsHref}" onclick="return openXhs('${locKey.replace(/'/g,"\\'")}')" class="btn xhs">${ICON_XHS}<span>小红书</span></a>`;
   }
-  const dpEnabled = loc.dianping !== false && (loc.dianping || loc.dianpingKeyword || loc.type==='food' || loc.type==='drink');
-  if(dpEnabled) {
-    const dpHref = IN_APP_WEBVIEW ? dpWebUrl(loc) : dpAppUrl(loc);
-    lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${ICON_DP}<span>点评</span></a>`;
-  }
   const noteParts = [];
   if (loc.addr) noteParts.push(loc.addr);
   if (loc.detail) noteParts.push(loc.detail);
