@@ -156,6 +156,15 @@ a:hover { text-decoration: underline; }
 .tabs-row .tabs { flex:1; }
 
 /* Links row */
+.row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.row-top .time { margin: 0; flex: 0 0 auto; }
+.row-top .dd { margin: 0; flex: 1 1 auto; min-width: 0; }
+.row-top .dd-btn { padding: 6px 10px; font-size: 13px; background: var(--bg-grouped); }
+.row-main { display: flex; gap: 10px; align-items: flex-start; margin-top: 8px; }
+.col-left { flex: 1; min-width: 0; }
+.row-note { margin-top: 10px; padding-top: 8px; border-top: .5px solid #e8e8ed; font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+.row-note > div + div { margin-top: 2px; }
+
 /* 卡片左右结构：左内容 / 右按钮（长条，SVG 图标 + 文字） */
 .card-main { display: flex; gap: 10px; align-items: flex-start; }
 .card-body { flex: 1; min-width: 0; }
@@ -667,19 +676,25 @@ function locCard(loc0, dayIdx, li) {
     const dpHref = IN_APP_WEBVIEW ? dpWebUrl(loc) : dpAppUrl(loc);
     lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${ICON_DP}<span>点评</span></a>`;
   }
-  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links,.dd')){toggle('${uid}');focusLoc(${dayIdx},${li});}">
-    <div class="card-main">
-      <div class="card-body">
-        ${dropdown}
-        <div class="time">${(loc0.time!=='—')?loc0.time:'备选'}</div>
-        <div class="name">${bdg} ${hasOpts?loc0.name:loc0.name}${hasOpts?'<span class="pick-hint">可切换</span>':''}</div>
-        <div class="desc">${loc.desc||''}</div>
-        ${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}
+  const noteParts = [];
+  if (loc.addr) noteParts.push(loc.addr);
+  if (loc.detail) noteParts.push(loc.detail);
+  if (loc.budget) noteParts.push(loc.budget);
+  const note = noteParts.length ? `<div class="row-note">${noteParts.map(t=>'<div>'+t.replace(/\n/g,'<br>')+'</div>').join('')}</div>` : '';
+  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card">
+    <div class="row-top">
+      <span class="time">${(loc0.time!=='—')?loc0.time:'备选'}</span>
+      ${dropdown}
+    </div>
+    <div class="row-main">
+      <div class="col-left">
+        <div class="name">${bdg} ${loc0.name}${hasOpts?'<span class="pick-hint">可切换</span>':''}</div>
+        ${loc.desc?'<div class="desc">'+loc.desc+'</div>':''}
         ${payChips(loc.pay)}
       </div>
       <div class="links">${lnk}</div>
     </div>
-    ${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}
+    ${note}
   </div></div>`;
 }
 
@@ -692,8 +707,8 @@ function legInfo(dayIdx, li) {
   if (!data || data[0] === null) { data = d.drive; m = 'drive'; }   // 没有该方式数据时退回自驾
   if (!data || data[0] === null) return '';
   const km = data[0], min = data[1];
-  const timeTxt = min >= 60 ? `${Math.floor(min/60)} 小时${min%60?(' '+min%60+' 分'):''}` : `${min} 分钟`;
   if (km === 0) return '';
+  const timeTxt = min >= 60 ? `${Math.floor(min/60)} 小时${min%60?(' '+min%60+' 分'):''}` : `${min} 分钟`;
   return `<div class="leg" onclick="event.stopPropagation()">
     <span class="leg-line"></span>
     <span class="leg-pill">
@@ -711,7 +726,6 @@ function cycleMode(dayIdx, li) {
   const cur = legMode[key] || defMode();
   legMode[key] = order[(order.indexOf(cur) + 1) % order.length];
   reRenderDay(dayIdx);
-  const y = window.scrollY; window.scrollTo(0, y);
 }
 function renderDay(idx) {
   const d = DAYS.find(x=>x.id===idx); if(!d) return '';
