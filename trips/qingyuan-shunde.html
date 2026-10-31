@@ -152,13 +152,17 @@ a:hover { text-decoration: underline; }
 .pay.idk { background: rgba(255,149,0,.1);  color: var(--tint-orange); }
 
 /* Links row */
-.links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: flex-end; }
+/* 卡片左右结构：左内容 / 右按钮（长条，SVG 图标 + 文字） */
+.card-main { display: flex; gap: 10px; align-items: flex-start; }
+.card-body { flex: 1; min-width: 0; }
+.links { display: flex; flex-direction: column; gap: 8px; flex: 0 0 auto; align-items: stretch; margin-top: 2px; }
 .btn {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 8px 14px; border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-width: 96px; padding: 9px 12px; border-radius: 10px;
   font-size: 13px; font-weight: 600; border: none; cursor: pointer;
-  text-decoration: none !important; transition: filter .2s;
+  text-decoration: none !important; transition: filter .2s; white-space: nowrap;
 }
+.btn svg { width: 15px; height: 15px; flex: 0 0 15px; }
 .btn:active { filter: brightness(.9); }
 .btn.nav    { background: var(--accent); color: #fff; }
 .btn.xhs    { background: #ff2442; color: #fff; }
@@ -239,6 +243,22 @@ a:hover { text-decoration: underline; }
 .opt { flex:0 0 auto; padding:6px 11px; border-radius:999px; border:0; font-size:13px; background:var(--bg-grouped); color:var(--text-secondary); }
 .opt.on { background:var(--accent); color:#fff; font-weight:500; }
 .pick-hint { margin-left:6px; font-size:11px; color:var(--text-tertiary); font-weight:400; }
+
+/* ── 备选：下拉列表（2026-10-31 家荣：横条放不下，改下拉；选完保持滚动位置）── */
+.dd { position: relative; margin-bottom: 8px; }
+.dd-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 9px 12px; border-radius: 10px; background: var(--bg-grouped); border: 0;
+  font-size: 14px; font-weight: 500; color: var(--text-primary); text-align: left; }
+.dd-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-caret { width: 16px; height: 16px; flex: 0 0 16px; transition: transform .2s; }
+.dd.open .dd-caret { transform: rotate(180deg); }
+.dd-panel { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 60;
+  background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 6px; max-height: 260px; overflow: auto; }
+.dd.open .dd-panel { display: block; }
+.dd-item { display: block; width: 100%; text-align: left; padding: 10px 12px; border: 0; background: none;
+  font-size: 14px; border-radius: 8px; color: var(--text-primary); }
+.dd-item.on { background: var(--bg-grouped); font-weight: 600; }
+.dd-add { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -247,6 +267,8 @@ a:hover { text-decoration: underline; }
 <div class="tabs" id="tabs"></div>
 <div class="content" id="content"></div>
 
+<script>window._AMapSecurityConfig={securityJsCode:'b84637843f2db6b18cb36973d1e1b833'};</script>
+<script src="https://webapi.amap.com/maps?v=2.0&key=d5bc70bd52fd3fb5e7868c701de89e90&plugin=AMap.PlaceSearch"></script>
 <script>
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  REPLACE THIS SECTION — Hotel and Days data                 ║
@@ -260,19 +282,15 @@ const DAYS = [
     { name: '景星名苑（出发）', lat: 22.801060, lng: 113.875019, type: 'transport', time: '08:30',
       desc: '深圳宝安高田大道 126 号',
       detail: '出发前备好：烧烤碳、烧烤食材、儿童安全座椅、阿衡奶粉/尿布/推车、换洗衣服。' },
-    { name: '午餐（佛冈）', lat: 23.867469, lng: 113.577960, type: 'food', time: '11:30',
+    { name: '午餐（佛冈）', lat: 23.871403, lng: 113.573829, type: 'food', time: '11:30',
       desc: '下高速先吃饭',
       options: [
-        { name: '祥辉餐厅·三八鸡粥（总店）', lat: 23.867469, lng: 113.577960,
-          desc: '106 国道边 · 佛冈最出名三八鸡粥 · 13642538878 · 到别墅 7km/13 分钟',
-          dianpingKeyword: '祥辉餐厅 三八鸡粥 佛冈' },
-        { name: '祥辉餐厅（佛冈店）', lat: 23.868490, lng: 113.527865,
-          desc: '环城中路 65 号 · 13927672825', dianpingKeyword: '祥辉餐厅 佛冈' },
         { name: '缘中园·驰名三八鸡粥', lat: 23.871403, lng: 113.573829,
-          desc: '石角镇三八村上里大桥北 · 0763-4382786', dianpingKeyword: '缘中园 三八鸡粥' },
+          desc: '石角镇三八村上里大桥北 · 0763-4382786 · 佛冈三八鸡粥',
+          dianpingKeyword: '缘中园 三八鸡粥 佛冈' },
         { name: '绿禾农庄·特色农家菜', lat: 23.742211, lng: 113.490049,
-          desc: '汤塘镇 S354 省道 · 18029755027 · 到别墅 26km/39 分钟', dianpingKeyword: '绿禾农庄 佛冈' },
-        { name: '到店再找', lat: 23.856000, lng: 113.620000, desc: '佛冈县城看现场' }
+          desc: '汤塘镇 S354 省道 · 18029755027 · 到别墅 26km/39 分钟',
+          dianpingKeyword: '绿禾农庄 佛冈' }
       ] },
     { name: '佛冈碧桂园清泉城（别墅）', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '14:00',
       desc: '入住 · 房内/园区温泉 · 唱K',
@@ -409,9 +427,8 @@ function pinHTML(color, type, active) {
   return `<div class="pin${active?' active':''}">
   <svg width="34" height="46" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">
     <path d="M17 1C8.2 1 1 8.1 1 16.9c0 11.6 13.4 25.3 15.3 27.3a1 1 0 0 0 1.4 0C19.6 42.2 33 28.5 33 16.9 33 8.1 25.8 1 17 1z"
-      fill="${color}" stroke="#fff" stroke-width="2.2"/>
-    <circle cx="17" cy="16.5" r="9.8" fill="#fff"/>
-    <g transform="translate(9.5,9)" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${g}</g>
+      fill="${color}" stroke="#fff" stroke-width="1.6"/>
+    <g transform="translate(9.5,9.6) scale(.62)" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${g}</g>
   </svg>
 </div>`;
 }
@@ -431,15 +448,59 @@ function chosen(l, dayIdx, li) {
   const oi = CH[chKey(dayIdx, li)] || 0;
   return Object.assign({}, l, l.options[oi] || l.options[0]);
 }
+function ddToggle(key) {
+  const p = document.getElementById('dd-' + key);
+  if (!p) return;
+  const dd = p.parentElement;
+  document.querySelectorAll('.dd.open').forEach(e => { if (e !== dd) e.classList.remove('open'); });
+  dd.classList.toggle('open');
+}
+function closeDds() { document.querySelectorAll('.dd.open').forEach(e => e.classList.remove('open')); }
+function reRenderDay(dayIdx) {
+  const y = window.scrollY;                            // 记住滚动位置，别把卡片弹回顶部
+  showDay(dayIdx);
+  document.getElementById('content').innerHTML = renderDay(dayIdx);
+  window.scrollTo(0, y);
+}
 function pickOpt(dayIdx, li, oi) {
   CH[chKey(dayIdx, li)] = oi;
-  showDay(dayIdx);                                   // 重画地图（图钉换到新选项、路线重算）
-  document.getElementById('content').innerHTML = renderDay(dayIdx);
-  highlightMarker(li, false);                        // 新选项的图钉高亮
+  reRenderDay(dayIdx);
+  highlightMarker(li, false);
   const day = DAYS.find(d => d.id === dayIdx);
   const l = day && day.locations[li] && chosen(day.locations[li], dayIdx, li);
   if (l && l.lat) map.flyTo([l.lat, l.lng], Math.max(map.getZoom(), 13), { duration: .5 });
-  flashCard(dayIdx, (l && l.name) || '');
+  closeDds();
+}
+/* 搜索添加地点（用高德 JS API PlaceSearch；没加载成功就退回高德搜索页）*/
+function ddAddSearch(dayIdx, li) {
+  const kw = prompt('搜索地点（如：佛冈 农家菜）');
+  if (!kw) return;
+  const day = DAYS.find(d => d.id === dayIdx);
+  const loc0 = day && day.locations[li];
+  if (!loc0) return;
+  const push = (list) => {
+    loc0.options = loc0.options || [{ name: loc0.name, lat: loc0.lat, lng: loc0.lng, desc: loc0.desc || '' }];
+    list.forEach(p => loc0.options.push(p));
+    CH[chKey(dayIdx, li)] = loc0.options.length - list.length;   // 默认选中第一个搜索结果
+    reRenderDay(dayIdx);
+    const ddp = document.getElementById('dd-' + dayIdx + '-' + li);
+    if (ddp) ddp.parentElement.classList.add('open');
+  };
+  if (window.AMap && AMap.PlaceSearch) {
+    const ps = new AMap.PlaceSearch({ pageSize: 5, citylimit: false });
+    ps.search(kw, (status, result) => {
+      if (status === 'complete' && result.poiList && result.poiList.pois.length) {
+        push(result.poiList.pois.slice(0, 5).map(p => ({
+          name: p.name, lat: p.location.lat, lng: p.location.lng,
+          desc: (p.address || '') + (p.tel ? ' · ' + p.tel : '')
+        })));
+      } else {
+        alert('没搜到，换个词试试');
+      }
+    });
+  } else {
+    window.open('https://uri.amap.com/search?keyword=' + encodeURIComponent(kw), '_blank');
+  }
 }
 let curDayMarkers = [];
 function highlightMarker(li, fly) {
@@ -551,23 +612,43 @@ function locCard(loc0, dayIdx, li) {
   const locKey = `${dayIdx}::${(loc0.name||'')}`;
   const gmapQ = loc.gmap||encodeURIComponent(loc.name+' Tokyo');
   const oi = CH[chKey(dayIdx, li)] || 0;
-  const chips = (loc0.options && loc0.options.length>1)
-    ? `<div class="opts">${loc0.options.map((o,k)=>`<button class="opt${k===oi?' on':''}" onclick="event.stopPropagation();pickOpt(${dayIdx},${li},${k})">${o.name}</button>`).join('')}</div>`
-    : '';
-  let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
+  const hasOpts = loc0.options && loc0.options.length > 1;
+  const ddId = `${dayIdx}-${li}`;
+  const CARET = '<svg class="dd-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>';
+  const dropdown = hasOpts ? `<div class="dd" onclick="event.stopPropagation()">
+      <button class="dd-btn" onclick="ddToggle('${ddId}')"><span>${loc.name}</span>${CARET}</button>
+      <div class="dd-panel" id="dd-${ddId}">
+        ${loc0.options.map((o,k)=>`<button class="dd-item${k===oi?' on':''}" onclick="pickOpt(${dayIdx},${li},${k})">${o.name}</button>`).join('')}
+        <button class="dd-item dd-add" onclick="ddAddSearch(${dayIdx},${li})">＋ 搜索添加地点</button>
+      </div>
+    </div>` : '';
+  const ICON_NAV  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 21 3l-8.5 18-2.2-7.3z"/></svg>';
+  const ICON_DP   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v7a2.5 2.5 0 0 0 5 0V4"/><path d="M6.5 12v8"/><path d="M18.5 4c-1.8 1.1-2.8 3.3-2.8 5.8V12h2.8z"/><path d="M16.5 12v8"/></svg>';
+  const ICON_XHS  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5z"/><path d="M8 8h8M8 12h8"/></svg>';
+  let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">${ICON_NAV}<span>导航</span></button>`;
   if(loc.xhs||loc.xhsKeyword) {
     const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
-    const xhsLabel = IN_APP_WEBVIEW ? '📕 小红书' : '📕 小红书 App';
-    lnk += `<a href="${xhsHref}" onclick="return openXhs('${locKey.replace(/'/g,"\\'")}')" class="btn xhs">${xhsLabel}</a>`;
+    lnk += `<a href="${xhsHref}" onclick="return openXhs('${locKey.replace(/'/g,"\\'")}')" class="btn xhs">${ICON_XHS}<span>小红书</span></a>`;
   }
   const dpEnabled = loc.dianping !== false && (loc.dianping || loc.dianpingKeyword || loc.type==='food' || loc.type==='drink');
   if(dpEnabled) {
     const dpHref = IN_APP_WEBVIEW ? dpWebUrl(loc) : dpAppUrl(loc);
-    const dpLabel = IN_APP_WEBVIEW ? '🍜 大众点评' : '🍜 大众点评 App';
-    lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${dpLabel}</a>`;
+    lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${ICON_DP}<span>点评</span></a>`;
   }
-  if(loc.reserve) lnk += `<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
-  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links,.opt')){toggle('${uid}');focusLoc(${dayIdx},${li});}">${chips}<div class="time">${(loc0.time!=='—')?loc0.time:'备选'}</div><div class="name">${bdg} ${loc0.name}${loc0.options&&loc0.options.length>1?'<span class="pick-hint">可切换</span>':''}</div><div class="desc">${loc.desc||''}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
+  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links,.dd')){toggle('${uid}');focusLoc(${dayIdx},${li});}">
+    <div class="card-main">
+      <div class="card-body">
+        ${dropdown}
+        <div class="time">${(loc0.time!=='—')?loc0.time:'备选'}</div>
+        <div class="name">${bdg} ${hasOpts?loc0.name:loc0.name}${hasOpts?'<span class="pick-hint">可切换</span>':''}</div>
+        <div class="desc">${loc.desc||''}</div>
+        ${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}
+        ${payChips(loc.pay)}
+      </div>
+      <div class="links">${lnk}</div>
+    </div>
+    ${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}
+  </div></div>`;
 }
 
 function renderDay(idx) {
