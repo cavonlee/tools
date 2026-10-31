@@ -276,8 +276,8 @@ a:hover { text-decoration: underline; }
 .dd-add { color: var(--accent); }
 
 /* ── 段间车程（地图上两点之间）── */
-.leg { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px 0; }
-.leg-line { flex: 0 1 46px; height: 1px; background: repeating-linear-gradient(90deg, var(--text-tertiary) 0 4px, transparent 4px 8px); opacity: .55; }
+.leg { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 6px 0; margin-left: -24px; }
+.leg-line { flex: 0 0 auto; width: 42px; height: 1px; background: repeating-linear-gradient(90deg, var(--text-tertiary) 0 4px, transparent 4px 8px); opacity: .55; }
 .leg-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
   background: var(--bg-elevated); border: 1px solid #e5e5ea; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
 .leg-pill svg { width: 14px; height: 14px; }
@@ -697,6 +697,23 @@ function locCard(loc0, dayIdx, li) {
   </div></div>`;
 }
 
+let _leg = null;
+function openLegSheet(dayIdx, li) {
+  _leg = [dayIdx, li];
+  const key = dayIdx + ':' + li;
+  const curM = legMode[key] || defMode();
+  document.getElementById('legSheetTitle').textContent = '这一段怎么走？';
+  document.getElementById('legModes').innerHTML = ['drive','taxi','walk'].map(m =>
+    `<button class="mode-opt${m===curM?' on':''}" data-m="${m}" onclick="pickLegMode('${m}')">${MODES[m].label}</button>`).join('');
+  document.getElementById('legSheet').classList.add('show');
+}
+function closeLegSheet() { document.getElementById('legSheet').classList.remove('show'); }
+function pickLegMode(m) {
+  if (!_leg) return;
+  legMode[_leg[0] + ':' + _leg[1]] = m;
+  closeLegSheet();
+  reRenderDay(cur);
+}
 function cardTap(ev, dayIdx, li, uid) {
   if (ev.target.closest('.btn,.links,.dd')) return;     // 按钮/下拉不触发
   const el = document.getElementById(uid);
@@ -716,10 +733,11 @@ function legInfo(dayIdx, li) {
   const timeTxt = min >= 60 ? `${Math.floor(min/60)} 小时${min%60?(' '+min%60+' 分'):''}` : `${min} 分钟`;
   return `<div class="leg" onclick="event.stopPropagation()">
     <span class="leg-line"></span>
-    <button class="leg-pill" onclick="cycleMode(${dayIdx},${li})">
+    <button class="leg-pill" onclick="openLegSheet(${dayIdx},${li})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${MODES[m].icon}</svg>
       <span>${MODES[m].label} ${km}km · ${timeTxt}</span>
     </button>
+    <span class="leg-line"></span>
   </div>`;
 }
 function cycleMode(dayIdx, li) {
@@ -809,5 +827,11 @@ function openAS(name, lat, lng, gmap) {
 function closeAS() { asOverlay.classList.remove('show'); }
 </script>
 
+<div class="sheet" id="legSheet" onclick="if(event.target===this)closeLegSheet()">
+  <div class="sheet-box">
+    <div class="sheet-title" id="legSheetTitle">这一段怎么走？</div>
+    <div class="mode-opts" id="legModes"></div>
+  </div>
+</div>
 </body>
 </html>
