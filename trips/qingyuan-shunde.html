@@ -224,6 +224,14 @@ a:hover { text-decoration: underline; }
 .leaflet-control-zoom a { width: 34px !important; height: 34px !important; line-height: 34px !important; font-size: 16px !important; border-radius: 10px !important; background: rgba(255,255,255,.85) !important; -webkit-backdrop-filter: blur(10px) !important; backdrop-filter: blur(10px) !important; border: .5px solid var(--separator) !important; color: var(--text-primary) !important; }
 .leaflet-control-zoom { border-radius: 12px !important; overflow: hidden; box-shadow: var(--shadow-md) !important; border: none !important; }
 .leaflet-control-attribution { font-size: 9px !important; opacity: .5; }
+
+/* ── 水滴图钉（2026-10-31：去掉圆点，改 SVG 水滴；选中放大+高亮）── */
+.pin-icon { background: none; border: 0; }
+.pin { transition: transform .18s ease, filter .18s ease; transform-origin: 50% 100%; }
+.pin.active { transform: scale(1.22) translateY(-2px); filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
+.pin.active svg path { stroke: #1d1d1f; }
+.card.flash { animation: cardFlash 1.1s ease; }
+@keyframes cardFlash { 0%,100% { background: var(--bg-elevated); } 30% { background: #e8f1ff; } }
 </style>
 </head>
 <body>
@@ -351,8 +359,19 @@ map.on('locationfound', e => {
 });
 map.on('locationerror', () => {});
 
+function pinHTML(color, emoji, active) {
+  const glyph = emoji || '📌';
+  return `<div class="pin${active?' active':''}">
+  <svg width="34" height="46" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17 1C8.2 1 1 8.1 1 16.9c0 11.6 13.4 25.3 15.3 27.3a1 1 0 0 0 1.4 0C19.6 42.2 33 28.5 33 16.9 33 8.1 25.8 1 17 1z"
+      fill="${color}" stroke="#fff" stroke-width="2.2"/>
+    <circle cx="17" cy="16.5" r="9.6" fill="#fff" fill-opacity=".95"/>
+    <text x="17" y="21" text-anchor="middle" font-size="12.5" font-family="-apple-system,sans-serif">${glyph}</text>
+  </svg>
+</div>`;
+}
 function icon(color, emoji) {
-  return L.divIcon({ className: '', html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.18)">${emoji||''}</div>`, iconSize: [28,28], iconAnchor: [14,14], popupAnchor: [0,-16] });
+  return L.divIcon({ className: 'pin-icon', html: pinHTML(color, emoji, false), iconSize: [34,46], iconAnchor: [17,44], popupAnchor: [0,-38] });
 }
 
 if (HOTEL.lat) L.marker([HOTEL.lat, HOTEL.lng], { icon: icon('#ff9500','🏨'), zIndexOffset: 1000 }).addTo(map).bindPopup(`<b>${HOTEL.name}</b>`);
@@ -360,6 +379,26 @@ if (HOTEL.lat) L.marker([HOTEL.lat, HOTEL.lng], { icon: icon('#ff9500','🏨'), 
 let markers = [], polylines = [];
 const emojis = { food:'🍽️', spot:'📍', hotel:'🏨', transport:'🚃', drink:'🍺' };
 
+let curDayMarkers = [];
+function highlightMarker(li, fly) {
+  curDayMarkers.forEach((m, i) => {
+    if (!m) return;
+    const el = m.getElement();
+    if (el) { const p = el.querySelector('.pin'); if (p) p.classList.toggle('active', i === li); }
+    m.setZIndexOffset(i === li ? 2000 : 0);
+  });
+  const m = curDayMarkers[li];
+  if (m && fly) map.flyTo(m.getLatLng(), Math.max(map.getZoom(), 15), { duration: .6 });
+  if (m) m.openPopup();
+}
+function flashCard(dayIdx, name) {
+  const cards = [...document.querySelectorAll('#content .card')];
+  const hit = cards.find(c => (c.querySelector('.name')?.textContent || '').includes(name.slice(0, 8)));
+  if (!hit) return;
+  hit.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  hit.classList.remove('flash'); void hit.offsetWidth; hit.classList.add('flash');
+}
+function focusLoc(dayIdx, li) { highlightMarker(li, true); }
 function clearMap() { markers.forEach(m=>map.removeLayer(m)); polylines.forEach(p=>map.removeLayer(p)); markers=[]; polylines=[]; }
 
 function showDay(idx) {
@@ -379,12 +418,15 @@ function showDay(idx) {
   const day = DAYS.find(d=>d.id===idx);
   if(!day) return;
   const coords = [];
-  day.locations.forEach(l => {
+  curDayMarkers = [];
+  day.locations.forEach((l, li) => {
     if(!l.lat) return;
     const m = L.marker([l.lat,l.lng], { icon: icon(day.color, emojis[l.type]||'📌') }).addTo(map);
+    m.__loc = l; m.__idx = li;
+    m.on('click', () => { highlightMarker(li); flashCard(idx, l.name); });
     const gmapQ = l.gmap||encodeURIComponent(l.name+' Tokyo');
     m.bindPopup(`<b>${l.name}</b>${l.time!=='—'?'<br><span style="color:#86868b">'+l.time+'</span>':''}<br>${l.desc}${l.budget?'<br><span style="color:#ff9500">'+l.budget+'</span>':''}<br><a href="#" onclick="event.preventDefault();openAS('${l.name.replace(/'/g,"\\'")}',${l.lat},${l.lng},'${gmapQ}')">📍 导航</a>${l.xhs?' · <a href="'+l.xhs+'" target="_blank">📕 小红书</a>':''}`);
-    markers.push(m);
+    markers.push(m); curDayMarkers[li] = m;
     if(l.time!=='—') coords.push([l.lat,l.lng]);
   });
   if(coords.length>1) { const pl = L.polyline(coords, { color:day.color, weight:2.5, opacity:.5, dashArray:'6,5' }).addTo(map); polylines.push(pl); }
@@ -444,7 +486,8 @@ function locCard(loc, dayIdx) {
   const uid = `d${dayIdx}-${loc.name.replace(/\W/g,'')}`;
   const locKey = `${dayIdx}::${loc.name}`;
   const gmapQ = loc.gmap||encodeURIComponent(loc.name+' Tokyo');
-  let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
+  let lnk = `<button class="btn svg-loc" onclick="event.stopPropagation();focusLoc(${dayIdx},${loc.__idx!==undefined?loc.__idx:'-'})">🎯 定位</button>`
+    + `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
   if(loc.xhs||loc.xhsKeyword) {
     const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
     const xhsLabel = IN_APP_WEBVIEW ? '📕 小红书' : '📕 小红书 App';
@@ -466,8 +509,8 @@ function renderDay(idx) {
   const main = d.locations.filter(l=>l.time!=='—');
   const alt = d.locations.filter(l=>l.time==='—');
   let h = `<div class="day-head"><h2>${d.title}</h2><p>${d.date}</p></div>`;
-  if(main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach(l => h += locCard(l, idx)); h += '</div>'; }
-  if(alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach(l => h += locCard(l, idx)); h += '</div>'; }
+  if(main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach(l => { l.__idx = d.locations.indexOf(l); h += locCard(l, idx); }); h += '</div>'; }
+  if(alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach(l => { l.__idx = d.locations.indexOf(l); h += locCard(l, idx); }); h += '</div>'; }
   return h;
 }
 
