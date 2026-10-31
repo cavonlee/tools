@@ -923,29 +923,29 @@ function openAmap(name, lat, lng) {
 }
 
 function navTo(name, lat, lng) {
-  const ua = (navigator.userAgent || '');
   const enc = encodeURIComponent(name || '目的地');
-  const isHarmony = /OpenHarmony|HarmonyOS|ArkWeb/i.test(ua);
-  const isAndroid = /Android/i.test(ua) || isHarmony;
+  const ua = (navigator.userAgent || '');
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  // 1) 安卓/鸿蒙：geo: 交给系统，让用户自己选高德/腾讯/百度/花瓣地图
-  if (isAndroid) {
-    try {
-      window.location.href = `geo:${lat},${lng}?q=${lat},${lng}(${enc})`;
-      setTimeout(() => { window.location.href = `https://uri.amap.com/marker?position=${lng},${lat}&name=${enc}&callnative=1`; }, 1200);
-      return;
-    } catch (e) {}
-  }
-  // 2) iOS：maps: 交给系统（会弹 Apple Maps / 已装导航 App 的选择器）
-  if (isIOS) {
-    try {
-      window.location.href = `maps://?q=${lat},${lng}&name=${enc}`;
-      setTimeout(() => { window.location.href = `https://maps.apple.com/?q=${lat},${lng}&name=${enc}`; }, 1200);
-      return;
-    } catch (e) {}
-  }
-  // 3) 桌面/其它：高德网页
-  window.open(`https://uri.amap.com/marker?position=${lng},${lat}&name=${enc}`, '_blank');
+  // 依次尝试：高德 App 直接导航 → 系统地图选择器 → 高德 universal link（仍在 App 内）
+  const tries = isIOS ? [
+    `iosamap://path?sourceApplication=pudding&dlat=${lat}&dlon=${lng}&dname=${enc}&dev=0&t=0`,
+    `maps://?q=${lat},${lng}&name=${enc}`,
+    `https://uri.amap.com/navigation?to=${lng},${lat},${enc}&mode=car&callnative=1`
+  ] : [
+    `amapuri://route/plan/?sourceApplication=pudding&dlat=${lat}&dlon=${lng}&dname=${enc}&dev=0&t=0`,
+    `geo:${lat},${lng}?q=${lat},${lng}(${enc})`,
+    `https://uri.amap.com/navigation?to=${lng},${lat},${enc}&mode=car&callnative=1`
+  ];
+  let i = 0, cancelled = false;
+  const onHide = () => { if (document.visibilityState === 'hidden') cancelled = true; };
+  document.addEventListener('visibilitychange', onHide);
+  const step = () => {
+    if (cancelled || i >= tries.length) return;
+    const u = tries[i++];
+    try { window.location.href = u; } catch (e) {}
+    setTimeout(step, 800);
+  };
+  step();
 }
 /* 若系统没拉起任何导航 App（页面还可见），退回应用内选择器兜底 */
 function navGuard(name, lat, lng) {
