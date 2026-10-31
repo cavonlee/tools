@@ -152,7 +152,7 @@ a:hover { text-decoration: underline; }
 .pay.idk { background: rgba(255,149,0,.1);  color: var(--tint-orange); }
 
 /* Links row */
-.links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: flex-end; }
 .btn {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 8px 14px; border-radius: var(--radius-sm);
@@ -256,64 +256,79 @@ const HOTEL = { name: '佛冈碧桂园清泉城（别墅区）', lat: 23.855065,
 
 const DAYS = [
   { id: 0, label: '总览', color: '#0071e3', locations: [] },
-  { id: 1, label: 'D1', date: '11-19 周四', title: '深圳 → 清远佛冈', color: '#ff9500', locations: [
+  { id: 1, label: '第一天', date: '11-19 周四', title: '深圳 → 清远佛冈', color: '#ff9500', locations: [
     { name: '景星名苑（出发）', lat: 22.801060, lng: 113.875019, type: 'transport', time: '08:30',
       desc: '深圳宝安高田大道 126 号',
       detail: '出发前备好：烧烤碳、烧烤食材、儿童安全座椅、阿衡奶粉/尿布/推车、换洗衣服。' },
-    { name: '午餐（佛冈）', lat: 23.867469, lng: 113.577960, type: 'food', time: '11:10',
-      desc: '下高速先吃饭，吃完再进别墅',
+    { name: '午餐（佛冈）', lat: 23.867469, lng: 113.577960, type: 'food', time: '11:30',
+      desc: '下高速先吃饭',
       options: [
         { name: '祥辉餐厅·三八鸡粥（总店）', lat: 23.867469, lng: 113.577960,
-          desc: '106 国道边 · 佛冈最出名的三八鸡粥 · 13642538878 · 吃完到别墅 7km/13 分钟',
+          desc: '106 国道边 · 佛冈最出名三八鸡粥 · 13642538878 · 到别墅 7km/13 分钟',
           dianpingKeyword: '祥辉餐厅 三八鸡粥 佛冈' },
         { name: '祥辉餐厅（佛冈店）', lat: 23.868490, lng: 113.527865,
-          desc: '环城中路 65 号 · 13927672825',
-          dianpingKeyword: '祥辉餐厅 佛冈' },
+          desc: '环城中路 65 号 · 13927672825', dianpingKeyword: '祥辉餐厅 佛冈' },
         { name: '缘中园·驰名三八鸡粥', lat: 23.871403, lng: 113.573829,
-          desc: '石角镇三八村上里大桥北 · 0763-4382786',
-          dianpingKeyword: '缘中园 三八鸡粥' },
+          desc: '石角镇三八村上里大桥北 · 0763-4382786', dianpingKeyword: '缘中园 三八鸡粥' },
         { name: '绿禾农庄·特色农家菜', lat: 23.742211, lng: 113.490049,
-          desc: '汤塘镇 S354 省道 · 18029755027 · 到别墅 26km/39 分钟',
-          dianpingKeyword: '绿禾农庄 佛冈' },
-        { name: '到店再找', lat: 23.856000, lng: 113.620000,
-          desc: '佛冈县城随便找一家，看现场' }
+          desc: '汤塘镇 S354 省道 · 18029755027 · 到别墅 26km/39 分钟', dianpingKeyword: '绿禾农庄 佛冈' },
+        { name: '到店再找', lat: 23.856000, lng: 113.620000, desc: '佛冈县城看现场' }
       ] },
-    { name: '佛冈碧桂园清泉城（别墅）', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '13:00',
-      desc: '入住放行李 · 距三八鸡粥 7km/13 分钟',
-      budget: '过路费 ¥95 + 油费约 ¥100' },
-    { name: '别墅午休', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '14:00',
-      desc: '阿衡睡觉，大人补觉' },
-    { name: '别墅烧烤（晚餐）', lat: 23.855065, lng: 113.620329, type: 'food', time: '18:00',
-      desc: '碳和食材出发前备好',
-      detail: '采购清单：烧烤碳、引火酒精块、夹子、锡纸、一次性手套、盐/孜然/辣椒粉/烧烤汁、肉串、鸡翅、玉米、茄子、生菜、饮料、垃圾袋。' },
-    { name: '泡温泉 · 自由活动', lat: 23.856856, lng: 113.622460, type: 'spot', time: '20:00',
-      desc: '温泉/园区散步，早点休息' }
+    { name: '佛冈碧桂园清泉城（别墅）', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '14:00',
+      desc: '入住 · 房内/园区温泉 · 唱K',
+      detail: '清泉城是碧桂园温泉别墅区，多数别墅带私汤或含温泉票；订房时确认「私汤还是园区温泉」、唱K设备、烧烤炉。' },
+    { name: '自由活动：午休 / 泡温泉', lat: 23.855065, lng: 113.620329, type: 'spot', time: '14:30',
+      desc: '阿衡睡觉，大人泡温泉' },
+    { name: '准备烧烤', lat: 23.855065, lng: 113.620329, type: 'food', time: '17:00',
+      desc: '生火、备菜' },
+    { name: '别墅烧烤（晚餐）', lat: 23.855065, lng: 113.620329, type: 'food', time: '19:00',
+      desc: '吃到 7-8 点' },
+    { name: '自由活动：唱K / 泡温泉', lat: 23.855065, lng: 113.620329, type: 'spot', time: '20:00',
+      desc: '早点休息' }
   ] },
-  { id: 2, label: 'D2', date: '11-20 周五', title: '清远', color: '#34c759', locations: [
-    { name: '清远（待定景点）', lat: 23.730000, lng: 113.010000, type: 'spot', time: '—',
-      desc: '景点还没发我，先留着' },
-    { name: '丰依竹食·竹火农家菜', lat: 23.661326, lng: 113.042215, type: 'food', time: '18:00',
-      desc: '清城区万象·水晶湾2期 · 竹火农家菜 · 18666691113',
-      detail: '距佛冈碧桂园 80.5km / 约 1.5 小时（走高速）。' }
+  { id: 2, label: '第二天', date: '11-20 周五', title: '森波拉度假森林', color: '#34c759', locations: [
+    { name: '森波拉度假森林', lat: 23.863446, lng: 113.582863, type: 'spot', time: '09:30',
+      desc: '佛冈石角镇三联村 · 距别墅 6.6km/16 分钟 · 带阿远阿衡玩水玩机动',
+      detail: '园区大：水世界＋机动游戏＋森林；推车必带，阿衡午睡可在园区找休息区。门票/项目现场买或提前网上买。' },
+    { name: '午餐（园内/附近）', lat: 23.863000, lng: 113.583000, type: 'food', time: '12:30',
+      desc: '看现场，园内餐厅或出口附近农庄' },
+    { name: '回别墅休息', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '17:00',
+      desc: '自由活动：午睡/泡温泉' },
+    { name: '晚餐（自由）', lat: 23.855065, lng: 113.620329, type: 'food', time: '18:30',
+      desc: '别墅做或佛冈县城吃，未定' }
   ] },
-  { id: 3, label: 'D3', date: '11-21 周六', title: '清远 → 顺德大良', color: '#af52de', locations: [
-    { name: '清远 → 顺德清晖园', lat: 22.842000, lng: 113.253000, type: 'transport', time: '09:30',
+  { id: 3, label: '第三天', date: '11-21 周六', title: '清远 → 顺德大良', color: '#af52de', locations: [
+    { name: '清远 → 顺德', lat: 22.842000, lng: 113.253000, type: 'transport', time: '09:30',
       desc: '约 117km / 1 小时 42 分' },
-    { name: '万菲公寓（清晖园店）', lat: 22.837801, lng: 113.256445, type: 'hotel', time: '11:30',
-      desc: '大良宜新路 26 号新红棉大厦 · 离清晖园步行圈 · 13535763839',
-      detail: '备选：瑞涛服务式公寓（凤翔路 22 号，距清晖园 2.8km / 15 分钟，0757-22200218）。' },
-    { name: '烧鹅再·传统顺德菜（大良店）', lat: 22.818494, lng: 113.267197, type: 'food', time: '12:30',
-      desc: '距公寓 3.6km / 17 分钟 · 18038842436' },
-    { name: '五里顺德早茶', lat: 22.811447, lng: 113.257699, type: 'food', time: '—',
-      desc: '牛乳粥底火锅·鱼生 · 距烧鹅再 2.2km / 12 分钟；适合第二天早餐' }
+    { name: '十五十六饭店（桑拿鸡）', lat: 22.810906, lng: 113.287592, type: 'food', time: '12:00',
+      desc: '大良旧寨古村东坊中街一巷 20 号 · 13702342341 · 顺德出名的桑拿鸡' },
+    { name: '入住公寓（清晖园）', lat: 22.837801, lng: 113.256445, type: 'hotel', time: '14:00',
+      desc: '午休 · 下午自由活动',
+      options: [
+        { name: '万菲公寓（清晖园店）', lat: 22.837801, lng: 113.256445,
+          desc: '大良宜新路 26 号新红棉大厦 · 清晖园步行圈 · 13535763839' },
+        { name: '瑞涛服务式公寓（清晖园店）', lat: 22.841899, lng: 113.233200,
+          desc: '凤翔路 22 号涛汇广场 3 座 · 距清晖园 2.8km/15 分钟 · 0757-22200218' }
+      ] },
+    { name: '自由活动：清晖园 / 华盖路', lat: 22.842000, lng: 113.253000, type: 'spot', time: '15:30',
+      desc: '午睡或附近逛' },
+    { name: '晚餐（待定）', lat: 22.818494, lng: 113.267197, type: 'food', time: '18:30',
+      desc: '候选：烧鹅再（大良店）· 18038842436',
+      options: [
+        { name: '烧鹅再·传统顺德菜（大良店）', lat: 22.818494, lng: 113.267197,
+          desc: '距公寓 3.6km/17 分钟 · 18038842436', dianpingKeyword: '烧鹅再 大良' },
+        { name: '到店再定', lat: 22.842000, lng: 113.253000, desc: '清晖园周边找' }
+      ] }
   ] },
-  { id: 4, label: 'D4', date: '11-22 周日', title: '顺德 → 南海盐步 → 深圳', color: '#ff2d55', locations: [
-    { name: '五里顺德早茶（早餐）', lat: 22.811447, lng: 113.257699, type: 'food', time: '08:30',
-      desc: '大良田心街二巷 1 号' },
-    { name: '康乐小食店（盐步）', lat: 23.087158, lng: 113.175242, type: 'food', time: '11:30',
-      desc: '南海盐步直街 17 号 · 距五里 38.3km / 57 分钟 · 0757-85772438' },
-    { name: '回深圳（景星名苑）', lat: 22.801060, lng: 113.875019, type: 'transport', time: '14:00',
-      desc: '盐步 → 深圳约 2 小时' }
+  { id: 4, label: '第四天', date: '11-22 周日', title: '顺德 → 深圳', color: '#ff2d55', locations: [
+    { name: '日日鲜肠粉（早餐）', lat: 22.837801, lng: 113.256445, type: 'food', time: '08:30',
+      desc: '大良 · 具体门店待你确认位置' },
+    { name: '五里顺德早茶', lat: 22.811447, lng: 113.257699, type: 'food', time: '10:00',
+      desc: '大良田心街二巷 1 号 · 牛乳粥底/鱼生' },
+    { name: '附近逛（清晖园/华盖路）', lat: 22.842000, lng: 113.253000, type: 'spot', time: '11:30',
+      desc: '自由活动' },
+    { name: '回深圳', lat: 22.801060, lng: 113.875019, type: 'transport', time: '14:30',
+      desc: '约 1.5 小时，晚上到家' }
   ] }
 
 ];
@@ -552,7 +567,7 @@ function locCard(loc0, dayIdx, li) {
     lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${dpLabel}</a>`;
   }
   if(loc.reserve) lnk += `<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
-  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links,.opt')){toggle('${uid}');focusLoc(${dayIdx},${li});}"><div class="time">${(loc0.time!=='—')?loc0.time:'备选'}</div><div class="name">${bdg} ${loc0.name}${loc0.options&&loc0.options.length>1?'<span class="pick-hint">可切换</span>':''}</div>${chips}<div class="desc">${loc.desc||''}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
+  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links,.opt')){toggle('${uid}');focusLoc(${dayIdx},${li});}">${chips}<div class="time">${(loc0.time!=='—')?loc0.time:'备选'}</div><div class="name">${bdg} ${loc0.name}${loc0.options&&loc0.options.length>1?'<span class="pick-hint">可切换</span>':''}</div><div class="desc">${loc.desc||''}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
 }
 
 function renderDay(idx) {
