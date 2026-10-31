@@ -929,11 +929,11 @@ function navTo(name, lat, lng) {
   // 依次尝试：高德 App 直接导航 → 系统地图选择器 → 高德 universal link（仍在 App 内）
   const tries = isIOS ? [
     `iosamap://path?sourceApplication=pudding&dlat=${lat}&dlon=${lng}&dname=${enc}&dev=0&t=0`,
-    `maps://?q=${lat},${lng}&name=${enc}`,
+    `maps://?q=${lat},${lng}&name=${name || ''}`,
     `https://uri.amap.com/navigation?to=${lng},${lat},${enc}&mode=car&callnative=1`
   ] : [
     `amapuri://route/plan/?sourceApplication=pudding&dlat=${lat}&dlon=${lng}&dname=${enc}&dev=0&t=0`,
-    `geo:${lat},${lng}?q=${lat},${lng}(${enc})`,
+    `geo:${lat},${lng}?q=${lat},${lng}(${name || ''})`,
     `https://uri.amap.com/navigation?to=${lng},${lat},${enc}&mode=car&callnative=1`
   ];
   let i = 0, cancelled = false;
