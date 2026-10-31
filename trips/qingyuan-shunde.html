@@ -681,7 +681,7 @@ function locCard(loc0, dayIdx, li) {
   const ICON_NAV  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 21 3l-8.5 18-2.2-7.3z"/></svg>';
   const ICON_DP   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v7a2.5 2.5 0 0 0 5 0V4"/><path d="M6.5 12v8"/><path d="M18.5 4c-1.8 1.1-2.8 3.3-2.8 5.8V12h2.8z"/><path d="M16.5 12v8"/></svg>';
   const ICON_XHS  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5z"/><path d="M8 8h8M8 12h8"/></svg>';
-  let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">${ICON_NAV}<span>导航</span></button>`;
+  let lnk = `<button class="btn nav" onclick="navTo('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng});navGuard('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng})">${ICON_NAV}<span>导航</span></button>`;
   if(loc.xhs||loc.xhsKeyword) {
     const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
     lnk += `<a href="${xhsHref}" onclick="return openXhs('${locKey.replace(/'/g,"\\'")}')" class="btn xhs">${ICON_XHS}<span>小红书</span></a>`;
@@ -902,6 +902,38 @@ function amapWebUrl(name, lat, lng) {
 function openAmap(name, lat, lng) {
   if (IN_APP_WEBVIEW) { window.open(amapWebUrl(name, lat, lng)); return; }
   window.location.href = amapAppUrl(name, lat, lng);
+}
+
+function navTo(name, lat, lng) {
+  const ua = (navigator.userAgent || '');
+  const enc = encodeURIComponent(name || '目的地');
+  const isHarmony = /OpenHarmony|HarmonyOS|ArkWeb/i.test(ua);
+  const isAndroid = /Android/i.test(ua) || isHarmony;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  // 1) 安卓/鸿蒙：geo: 交给系统，让用户自己选高德/腾讯/百度/花瓣地图
+  if (isAndroid) {
+    try {
+      window.location.href = `geo:${lat},${lng}?q=${lat},${lng}(${enc})`;
+      setTimeout(() => { window.location.href = `https://uri.amap.com/marker?position=${lng},${lat}&name=${enc}&callnative=1`; }, 1200);
+      return;
+    } catch (e) {}
+  }
+  // 2) iOS：maps: 交给系统（会弹 Apple Maps / 已装导航 App 的选择器）
+  if (isIOS) {
+    try {
+      window.location.href = `maps://?q=${lat},${lng}&name=${enc}`;
+      setTimeout(() => { window.location.href = `https://maps.apple.com/?q=${lat},${lng}&name=${enc}`; }, 1200);
+      return;
+    } catch (e) {}
+  }
+  // 3) 桌面/其它：高德网页
+  window.open(`https://uri.amap.com/marker?position=${lng},${lat}&name=${enc}`, '_blank');
+}
+/* 若系统没拉起任何导航 App（页面还可见），退回应用内选择器兜底 */
+function navGuard(name, lat, lng) {
+  setTimeout(() => {
+    if (document.visibilityState === 'visible') openAS(name, lat, lng);
+  }, 1600);
 }
 
 function openAS(name, lat, lng, gmap) {
