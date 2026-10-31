@@ -359,22 +359,30 @@ map.on('locationfound', e => {
 });
 map.on('locationerror', () => {});
 
-function pinHTML(color, emoji, active) {
-  const glyph = emoji || '📌';
+/* 线性 SVG 图标（24×24 视框，描边）—— 比 emoji 清晰，任何设备一致 */
+const GLYPHS = {
+  food: '<path d="M4 3v6a2.5 2.5 0 0 0 5 0V3"/><path d="M6.5 11v10"/><path d="M19 3c-2 1.2-3 3.6-3 6.2V13h3z"/><path d="M17 13v8"/>',
+  spot: '<path d="M3.5 19.5 9 8l3.4 6.4L15 10l5.5 9.5z"/>',
+  hotel: '<path d="M3 19v-7a1.6 1.6 0 0 1 1.6-1.6h14.8A1.6 1.6 0 0 1 21 12v7"/><path d="M3 16h18"/><path d="M7 10.4V8.2A1.2 1.2 0 0 1 8.2 7h3.4v3.4"/>',
+  transport: '<path d="M4.5 16.5h15"/><path d="M6 16.5 4.8 11.6 6.6 7h10.8l1.8 4.6-1.2 4.9"/><circle cx="7.6" cy="17.6" r="1.5"/><circle cx="16.4" cy="17.6" r="1.5"/>',
+  drink: '<path d="M17.5 9h.9a3.3 3.3 0 0 1 0 6.6h-.9"/><path d="M4 9h13.5v6.4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9z"/><path d="M7.5 4.5v1.6M11.2 4.5v1.6M14.9 4.5v1.6"/>'
+};
+function pinHTML(color, type, active) {
+  const g = GLYPHS[type] || GLYPHS.spot;
   return `<div class="pin${active?' active':''}">
   <svg width="34" height="46" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">
     <path d="M17 1C8.2 1 1 8.1 1 16.9c0 11.6 13.4 25.3 15.3 27.3a1 1 0 0 0 1.4 0C19.6 42.2 33 28.5 33 16.9 33 8.1 25.8 1 17 1z"
       fill="${color}" stroke="#fff" stroke-width="2.2"/>
-    <circle cx="17" cy="16.5" r="9.6" fill="#fff" fill-opacity=".95"/>
-    <text x="17" y="21" text-anchor="middle" font-size="12.5" font-family="-apple-system,sans-serif">${glyph}</text>
+    <circle cx="17" cy="16.5" r="9.8" fill="#fff"/>
+    <g transform="translate(9.5,9)" fill="none" stroke="#1d1d1f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${g}</g>
   </svg>
 </div>`;
 }
-function icon(color, emoji) {
-  return L.divIcon({ className: 'pin-icon', html: pinHTML(color, emoji, false), iconSize: [34,46], iconAnchor: [17,44], popupAnchor: [0,-38] });
+function icon(color, type) {
+  return L.divIcon({ className: 'pin-icon', html: pinHTML(color, type, false), iconSize: [34,46], iconAnchor: [17,44], popupAnchor: [0,-38] });
 }
 
-if (HOTEL.lat) L.marker([HOTEL.lat, HOTEL.lng], { icon: icon('#ff9500','🏨'), zIndexOffset: 1000 }).addTo(map).bindPopup(`<b>${HOTEL.name}</b>`);
+if (HOTEL.lat) L.marker([HOTEL.lat, HOTEL.lng], { icon: icon('#ff9500','hotel'), zIndexOffset: 1000 }).addTo(map).bindPopup(`<b>${HOTEL.name}</b>`);
 
 let markers = [], polylines = [];
 const emojis = { food:'🍽️', spot:'📍', hotel:'🏨', transport:'🚃', drink:'🍺' };
@@ -421,7 +429,7 @@ function showDay(idx) {
   curDayMarkers = [];
   day.locations.forEach((l, li) => {
     if(!l.lat) return;
-    const m = L.marker([l.lat,l.lng], { icon: icon(day.color, emojis[l.type]||'📌') }).addTo(map);
+    const m = L.marker([l.lat,l.lng], { icon: icon(day.color, l.type) }).addTo(map);
     m.__loc = l; m.__idx = li;
     m.on('click', () => { highlightMarker(li); flashCard(idx, l.name); });
     const gmapQ = l.gmap||encodeURIComponent(l.name+' Tokyo');
@@ -486,8 +494,7 @@ function locCard(loc, dayIdx) {
   const uid = `d${dayIdx}-${loc.name.replace(/\W/g,'')}`;
   const locKey = `${dayIdx}::${loc.name}`;
   const gmapQ = loc.gmap||encodeURIComponent(loc.name+' Tokyo');
-  let lnk = `<button class="btn svg-loc" onclick="event.stopPropagation();focusLoc(${dayIdx},${loc.__idx!==undefined?loc.__idx:'-'})">🎯 定位</button>`
-    + `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
+  let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
   if(loc.xhs||loc.xhsKeyword) {
     const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
     const xhsLabel = IN_APP_WEBVIEW ? '📕 小红书' : '📕 小红书 App';
@@ -501,7 +508,7 @@ function locCard(loc, dayIdx) {
     lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${dpLabel}</a>`;
   }
   if(loc.reserve) lnk += `<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
-  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links'))toggle('${uid}')"><div class="time">${loc.time!=='—'?loc.time:'备选'}</div><div class="name">${bdg} ${loc.name}</div><div class="desc">${loc.desc}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
+  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links')){toggle('${uid}');focusLoc(${dayIdx},${loc.__idx!==undefined?loc.__idx:'-'});}"><div class="time">${loc.time!=='—'?loc.time:'备选'}</div><div class="name">${bdg} ${loc.name}</div><div class="desc">${loc.desc}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
 }
 
 function renderDay(idx) {
