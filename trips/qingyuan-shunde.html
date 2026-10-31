@@ -291,6 +291,18 @@ a:hover { text-decoration: underline; }
 .mode-opts { display: flex; gap: 8px; flex-wrap: wrap; }
 .mode-opt { padding: 9px 14px; border-radius: 10px; background: var(--bg-grouped); border: 0; font-size: 14px; }
 .mode-opt.on { background: var(--accent); color: #fff; }
+
+/* ── 路线详情弹窗 ── */
+.leg-sheet-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.leg-route { display:flex; align-items:center; gap:8px; font-size:15px; font-weight:600; min-width:0; }
+.leg-route span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.leg-route svg { width:18px; height:18px; flex:0 0 18px; color:var(--text-secondary); }
+.sheet-close { width:30px; height:30px; border-radius:50%; border:0; background:var(--bg-grouped); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); }
+.sheet-close svg { width:16px; height:16px; }
+.leg-summary { display:flex; align-items:baseline; gap:10px; margin:12px 0 14px; }
+.leg-km { font-size:26px; font-weight:700; letter-spacing:-0.02em; }
+.leg-min { font-size:15px; color:var(--text-secondary); }
+.leg-hint { margin-top:10px; font-size:12px; color:var(--text-tertiary); }
 </style>
 </head>
 <body>
@@ -300,7 +312,7 @@ a:hover { text-decoration: underline; }
 <div class="content" id="content"></div>
 
 <script>window._AMapSecurityConfig={securityJsCode:'b84637843f2db6b18cb36973d1e1b833'};</script>
-<script src="https://webapi.amap.com/maps?v=2.0&key=d5bc70bd52fd3fb5e7868c701de89e90&plugin=AMap.PlaceSearch"></script>
+<script src="https://webapi.amap.com/maps?v=2.0&key=d5bc70bd52fd3fb5e7868c701de89e90&plugin=AMap.PlaceSearch,AMap.Driving,AMap.Walking"></script>
 <script>
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  REPLACE THIS SECTION — Hotel and Days data                 ║
@@ -700,22 +712,92 @@ function locCard(loc0, dayIdx, li) {
   </div></div>`;
 }
 
-let _leg = null;
+let _leg = null, legLayer = null;
+function legCoords(dayIdx, li) {
+  const day = DAYS.find(d => d.id === dayIdx);
+  if (!day || li < 1) return null;
+  const a0 = day.locations[li - 1], b0 = day.locations[li];
+  const a = chosen(a0, dayIdx, li - 1), b = chosen(b0, dayIdx, li);
+  return { from: a0.name, to: b0.name, a: [a.lat, a.lng], b: [b.lat, b.lng] };
+}
+function clearLegLayer() { if (legLayer) { map.removeLayer(legLayer); legLayer = null; } }
 function openLegSheet(dayIdx, li) {
   _leg = [dayIdx, li];
-  const key = dayIdx + ':' + li;
-  const curM = legMode[key] || defMode();
-  document.getElementById('legSheetTitle').textContent = '这一段怎么走？';
-  document.getElementById('legModes').innerHTML = ['drive','taxi','walk'].map(m =>
-    `<button class="mode-opt${m===curM?' on':''}" data-m="${m}" onclick="pickLegMode('${m}')">${MODES[m].label}</button>`).join('');
+  const c = legCoords(dayIdx, li);
+  if (!c) return;
+  document.getElementById('legFrom').textContent = c.from;
+  document.getElementById('legTo').textContent = c.to;
   document.getElementById('legSheet').classList.add('show');
+  renderLegModes();
+  drawLegRoute();
 }
-function closeLegSheet() { document.getElementById('legSheet').classList.remove('show'); }
-function pickLegMode(m) {
+function closeLegSheet() {
+  document.getElementById('legSheet').classList.remove('show');
+  clearLegLayer();
+}
+function currentLegMode() {
+  const [d, li] = _leg || [];
+  return legMode[d + ':' + li] || defMode();
+}
+function renderLegModes() {
+  const cur = currentLegMode();
+  document.getElementById('legModes').innerHTML = ['drive','taxi','walk'].map(m =>
+    `<button class="mode-opt${m===cur?' on':''}" data-m="${m}" onclick="setLegMode('${m}')">${MODES[m].label}</button>`).join('');
+}
+function setLegMode(m) {
   if (!_leg) return;
   legMode[_leg[0] + ':' + _leg[1]] = m;
-  closeLegSheet();
+  renderLegModes();
+  drawLegRoute();
   reRenderDay(cur);
+  document.getElementById('legSheet').classList.add('show');
+}
+function drawLegRoute() {
+  const [dayIdx, li] = _leg || [];
+  const c = legCoords(dayIdx, li);
+  if (!c) return;
+  const mode = currentLegMode();
+  const key = dayIdx + ':' + li;
+  const d = LEGS[key] || {};
+  // 先用离线数据填概要
+  const stat = (mode === 'walk') ? d.walk : d.drive;
+  fillLegSummary(stat);
+  clearLegLayer();
+  const A = [c.a[0], c.a[1]], B = [c.b[0], c.b[1]];
+  const drawLine = (pts, dotted) => {
+    legLayer = L.polyline(pts, { color: '#0071e3', weight: 5, opacity: .85, lineJoin: 'round', dashArray: dotted ? '8,8' : null }).addTo(map);
+    legLayer.bringToFront();
+    map.fitBounds(legLayer.getBounds(), { padding: [40, 40], maxZoom: 14 });
+  };
+  if (window.AMap && (mode !== 'walk' ? AMap.Driving : AMap.Walking)) {
+    const engine = (mode !== 'walk') ? new AMap.Driving({ policy: AMap.DrivingPolicy ? AMap.DrivingPolicy.LEAST_TIME : 0 })
+                                    : new AMap.Walking({});
+    const done = (status, result) => {
+      if (status === 'complete' && result.routes && result.routes[0]) {
+        const r = result.routes[0];
+        const pts = [];
+        (r.steps || []).forEach(st => (st.path || []).forEach(p => pts.push([p.lat, p.lng])));
+        if (pts.length > 1) drawLine(pts, false);
+        fillLegSummary([Math.round(r.distance/100) / 10, Math.round(r.time / 60)]);
+        document.getElementById('legHint').textContent = '路线来自高德实时规划';
+      } else {
+        document.getElementById('legHint').textContent = '高德路线获取失败，先用示意直线';
+        drawLine([A, B], true);
+      }
+    };
+    const from = [c.a[1], c.a[0]], to = [c.b[1], c.b[0]];   // AMap 用 lng,lat
+    try { engine.search(new AMap.LngLat(from[0], from[1]), new AMap.LngLat(to[0], to[1]), done); }
+    catch(e) { drawLine([A, B], true); }
+  } else {
+    document.getElementById('legHint').textContent = '地图路线需高德 JS API（域名白名单）；现在是示意直线';
+    drawLine([A, B], true);
+  }
+}
+function fillLegSummary(stat) {
+  if (!stat || stat[0] === null) { document.getElementById('legKm').textContent = '—'; document.getElementById('legMin').textContent = ''; return; }
+  const km = stat[0], min = stat[1];
+  document.getElementById('legKm').textContent = km + ' km';
+  document.getElementById('legMin').textContent = min >= 60 ? `${Math.floor(min/60)} 小时${min%60?(' '+min%60+' 分'):''}` : `${min} 分钟`;
 }
 function cardTap(ev, dayIdx, li, uid) {
   if (ev.target.closest('.btn,.links,.dd')) return;     // 按钮/下拉不触发
@@ -832,9 +914,17 @@ function closeAS() { asOverlay.classList.remove('show'); }
 
 <div class="sheet" id="legSheet" onclick="if(event.target===this)closeLegSheet()">
   <div class="sheet-box">
-    <div class="sheet-title" id="legSheetTitle">这一段怎么走？</div>
+    <div class="leg-sheet-head">
+      <div class="leg-route"><span id="legFrom">起点</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span id="legTo">终点</span></div>
+      <button class="sheet-close" onclick="closeLegSheet()" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="leg-summary">
+      <div class="leg-km" id="legKm">--</div>
+      <div class="leg-min" id="legMin">--</div>
+    </div>
     <div class="mode-opts" id="legModes"></div>
+    <div class="leg-hint" id="legHint"></div>
   </div>
 </div>
-</body>
+</body></body>
 </html>
