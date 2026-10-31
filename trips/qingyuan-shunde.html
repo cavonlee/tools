@@ -274,14 +274,11 @@ a:hover { text-decoration: underline; }
 .dd-add { color: var(--accent); }
 
 /* ── 段间车程（地图上两点之间）── */
-.leg { display: flex; align-items: center; gap: 8px; padding: 2px 0 2px 14px; }
-.leg-line { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--text-tertiary) 0 4px, transparent 4px 8px); opacity: .55; }
+.leg { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px 0; }
+.leg-line { flex: 0 1 46px; height: 1px; background: repeating-linear-gradient(90deg, var(--text-tertiary) 0 4px, transparent 4px 8px); opacity: .55; }
 .leg-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
   background: var(--bg-elevated); border: 1px solid #e5e5ea; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
 .leg-pill svg { width: 14px; height: 14px; }
-.leg-set { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #e5e5ea; background: var(--bg-elevated);
-  display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); }
-.leg-set svg { width: 15px; height: 15px; }
 .settings-btn { margin-left: 8px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--bg-elevated);
   box-shadow: 0 1px 4px rgba(0,0,0,.12); display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); }
 .settings-btn svg { width: 18px; height: 18px; }
@@ -711,12 +708,9 @@ function legInfo(dayIdx, li) {
   const timeTxt = min >= 60 ? `${Math.floor(min/60)} 小时${min%60?(' '+min%60+' 分'):''}` : `${min} 分钟`;
   return `<div class="leg" onclick="event.stopPropagation()">
     <span class="leg-line"></span>
-    <span class="leg-pill">
+    <button class="leg-pill" onclick="cycleMode(${dayIdx},${li})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${MODES[m].icon}</svg>
       <span>${MODES[m].label} ${km}km · ${timeTxt}</span>
-    </span>
-    <button class="leg-set" onclick="openLegSettings(${dayIdx},${li})" aria-label="交通方式设置">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
   </div>`;
 }
@@ -806,40 +800,6 @@ function openAS(name, lat, lng, gmap) {
 }
 function closeAS() { asOverlay.classList.remove('show'); }
 </script>
-<div class="sheet" id="legSheet" onclick="if(event.target===this)closeLegSheet()">
-  <div class="sheet-box">
-    <div class="sheet-title">这一段怎么走？</div>
-    <div class="mode-opts" id="legModes"></div>
-    <button class="mode-default" id="legDefaultBtn" onclick="setLegAsDefault()">把选中的设为默认</button>
-  </div>
-</div>
-<script>
-let _legTarget = null;
-function openLegSettings(dayIdx, li){
-  _legTarget = [dayIdx, li];
-  const key = dayIdx + ':' + li;
-  const curMode = legMode[key] || defMode();
-  const box = document.getElementById('legModes');
-  box.innerHTML = ['drive','taxi','walk'].map(m =>
-    `<button class="mode-opt ${m===curMode?'on':''}" data-m="${m}" onclick="pickLegMode('${m}')">${MODES[m].label}</button>`).join('');
-  document.getElementById('legSheet').classList.add('show');
-}
-function closeLegSheet(){ document.getElementById('legSheet').classList.remove('show'); }
-function pickLegMode(m){
-  const [d, li] = _legTarget || [];
-  if (d == null) return;
-  legMode[d + ':' + li] = m;
-  document.querySelectorAll('#legModes .mode-opt').forEach(b => b.classList.toggle('on', b.dataset.m === m));
-  reRenderDay(cur);
-  closeLegSheet();
-}
-function setLegAsDefault(){
-  const active = document.querySelector('#legModes .mode-opt.on');
-  const m = active ? active.dataset.m : 'drive';
-  try { localStorage.setItem(MODE_KEY, m); } catch(e) {}
-  closeLegSheet();
-  reRenderDay(cur);
-}
-</script>
+
 </body>
 </html>
