@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>秋假出游 · 清远 → 顺德（2026-11-19~22）</title>
-<meta name="description" content="<!-- REPLACE: Trip Description -->">
+<title>清远 → 顺德 · 2026-11-19~22（4 天 3 晚）</title>
+<meta name="description" content="深圳出发 → 清远佛冈 → 顺德美食 → 返深；带阿远阿衡，一天一个区域">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -237,134 +237,31 @@ a:hover { text-decoration: underline; }
 // ║  REPLACE THIS SECTION — Hotel and Days data                 ║
 // ╚══════════════════════════════════════════════════════════════╝
 
-const HOTEL = {"name": "清远（住宿待定）", "lat": 23.682064, "lng": 113.056098};
+const HOTEL = { name: '佛冈碧桂园清泉城（别墅区）', lat: 23.855065, lng: 113.620329 };
+
 const DAYS = [
- {
-  "id": 0,
-  "label": "总览",
-  "color": "#0071e3",
-  "locations": []
- },
- {
-  "id": 1,
-  "label": "D1",
-  "date": "11-19 周四",
-  "title": "深圳 → 清远",
-  "color": "#ff9500",
-  "locations": [
-   {
-    "name": "爸妈家出发",
-    "lat": 22.799822,
-    "lng": 113.874917,
-    "type": "transport",
-    "time": "09:00",
-    "desc": "自驾约 2 小时（待核实时路况）"
-   },
-   {
-    "name": "清远 · 住宿（待定）",
-    "lat": 23.682064,
-    "lng": 113.056098,
-    "type": "hotel",
-    "time": "11:30",
-    "desc": "清远市区，具体酒店待选（长隆/别墅/市区）"
-   },
-   {
-    "name": "清远 · 晚餐点位待补",
-    "lat": 23.682064,
-    "lng": 113.056098,
-    "type": "food",
-    "time": "18:00",
-    "desc": "清远市区本地菜；具体店等你发"
-   }
-  ]
- },
- {
-  "id": 2,
-  "label": "D2",
-  "date": "11-20 周五",
-  "title": "清远玩 → 顺德大良",
-  "color": "#34c759",
-  "locations": [
-   {
-    "name": "清远 · 白天点位待补",
-    "lat": 23.682064,
-    "lng": 113.056098,
-    "type": "spot",
-    "time": "09:30",
-    "desc": "清远玩哪几个点（等你发）"
-   },
-   {
-    "name": "烧鹅再 · 传统顺德菜（大良店）",
-    "lat": 22.818494,
-    "lng": 113.267197,
-    "type": "food",
-    "time": "18:30",
-    "desc": "清远→大良 125.7km / 约 2 小时；电话 18038842436",
-    "xhsKeyword": "烧鹅再 大良",
-    "dianpingKeyword": "烧鹅再 大良"
-   }
-  ]
- },
- {
-  "id": 3,
-  "label": "D3",
-  "date": "11-21 周六",
-  "title": "顺德大良 · 早茶＋园林",
-  "color": "#5856d6",
-  "locations": [
-   {
-    "name": "五里顺德早茶（牛乳粥底火锅·鱼生）",
-    "lat": 22.811447,
-    "lng": 113.257699,
-    "type": "food",
-    "time": "08:30",
-    "desc": "距烧鹅再 2.2km / 9 分钟；早茶建议早去",
-    "xhsKeyword": "五里顺德早茶",
-    "dianpingKeyword": "五里顺德早茶"
-   },
-   {
-    "name": "清晖园",
-    "lat": 22.838,
-    "lng": 113.293,
-    "type": "spot",
-    "time": "10:30",
-    "desc": "广东四大名园，拍照打卡；门票/开放时间出发前确认"
-   },
-   {
-    "name": "顺峰山公园",
-    "lat": 22.812,
-    "lng": 113.281,
-    "type": "spot",
-    "time": "15:30",
-    "desc": "免费大公园，娃能跑；阿衡推车友好"
-   }
-  ]
- },
- {
-  "id": 4,
-  "label": "D4",
-  "date": "11-22 周日",
-  "title": "顺德 → 南海盐步 → 回家",
-  "color": "#ff3b30",
-  "locations": [
-   {
-    "name": "康乐小食店（南海盐步）",
-    "lat": 23.087158,
-    "lng": 113.175242,
-    "type": "food",
-    "time": "11:00",
-    "desc": "回深圳方向顺路；距五里早茶约 38km / 48 分钟"
-   },
-   {
-    "name": "到家 · 爸妈家",
-    "lat": 22.799822,
-    "lng": 113.874917,
-    "type": "transport",
-    "time": "15:00",
-    "desc": "盐步→深圳约 1.5–2 小时（待核）"
-   }
-  ]
- }
+  { id: 0, label: '总览', color: '#0071e3', locations: [] },
+  { id: 1, label: 'D1', date: '11-19 周四', title: '深圳 → 清远佛冈', color: '#ff9500', locations: [
+    { name: '景星名苑（出发）', lat: 22.801060, lng: 113.875019, type: 'transport', time: '08:30',
+      desc: '深圳宝安区高田大道 126 号 · 装车出发（儿童安全座椅、阿衡奶粉/辅食备用）',
+      detail: '提前一晚收行李：阿远换洗 3 套＋泳衣、阿衡尿布/奶粉/推车、常用药（退烧/止泻/创可贴）、充电器、保温杯。' },
+    { name: '佛冈碧桂园清泉城（别墅区）', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '11:00',
+      desc: '车程 173km · 约 2 小时 32 分 · 过路费约 ¥95 · 入住放行李',
+      detail: '路线：深圳 → 广深/京港澳高速 → 佛冈出口 → 右转约 5km。中途建议在服务区停 1 次（阿衡活动/换尿布）。\n到达后先入住、给阿衡冲奶午睡。',
+      budget: '过路费 ¥95 + 油费约 ¥100' },
+    { name: '清泉城/佛冈县城 午餐', lat: 23.853000, lng: 113.625000, type: 'food', time: '12:00',
+      desc: '到店后按现场/点评选，不提前锁；找有汤/粥/肠粉的，孩子都能吃',
+      dianpingKeyword: '佛冈 清泉城 餐厅' },
+    { name: '别墅区休整 · 温泉/泳池', lat: 23.856856, lng: 113.622460, type: 'spot', time: '14:30',
+      desc: '阿衡午睡、阿远泳池或儿童乐园；节奏放慢，第一天不安排远景点',
+      detail: '碧桂园清泉城内有温泉酒店和园区绿化，孩子跑一跑就够。傍晚可以在园区散步拍照（静虹爱拍）。' },
+    { name: '晚餐（园区或佛冈县城）', lat: 23.852509, lng: 113.631508, type: 'food', time: '18:00',
+      desc: '第一天不折腾：园区餐厅或县城 15 分钟内；清远鸡/山坑螺/农家菜都是本地味',
+      dianpingKeyword: '佛冈 清远鸡' }
+  ] },
+  { id: 2, label: 'D2', date: '11-20 周五', title: '清远（待定景点）', color: '#34c759', locations: [] },
+  { id: 3, label: 'D3', date: '11-21 周六', title: '清远 → 顺德大良（烧鹅再 + 五里早茶）', color: '#af52de', locations: [] },
+  { id: 4, label: 'D4', date: '11-22 周日', title: '顺德 → 南海盐步（康乐小食店）→ 深圳', color: '#ff2d55', locations: [] }
 ];
 
 // ╔══════════════════════════════════════════════════════════════╗
@@ -373,31 +270,27 @@ const DAYS = [
 
 function overviewContent() {
   return `
-<div class="hero"><h1>秋假出游 · 清远 → 顺德</h1><p class="subtitle">2026-11-19 ～ 11-22 · 4 天 3 晚 · 自驾 · 两大两小</p></div>
+<div class="hero"><h1>清远 → 顺德 · 4 天 3 晚</h1><p class="subtitle">2026-11-19（周四）～11-22（周日）· 带阿远、阿衡 · 一天一个区域</p></div>
 <div class="info-grid">
-  <div class="info-card"><div class="label">出发</div><div class="value">11-19 上午 · 爸妈家</div></div>
-  <div class="info-card"><div class="label">住宿</div><div class="value">清远（待定）</div></div>
-  <div class="info-card"><div class="label">主线</div><div class="value">清远 → 顺德大良 → 盐步</div></div>
-  <div class="info-card"><div class="label">预算</div><div class="value">待定（酒店未选）</div></div>
+  <div class="info-card"><div class="label">住</div><div class="value">D1–D2 佛冈碧桂园清泉城别墅区 · D3 顺德大良</div></div>
+  <div class="info-card"><div class="label">车程</div><div class="value">深圳→佛冈 173km/2.5h · 佛冈→顺德大良 126km/2h</div></div>
+  <div class="info-card"><div class="label">过路费</div><div class="value">约 ¥95（去程）＋回程约 ¥60</div></div>
+  <div class="info-card"><div class="label">预估总费用</div><div class="value">待定（住宿＋门票＋餐饮确认后补）</div></div>
 </div>
 <div class="section-head">行程概览</div>
 <div class="day-list">${DAYS.slice(1).map(d=>`<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${d.color}"></span>${d.label} · ${d.title}</div><div class="desc">${d.date}</div></div>`).join('')}</div>
-<div class="section-head">待补 / 待确认</div>
-<div class="card"><div class="name">清远点位</div><div class="desc">清远玩哪几个点（等你发，我再补进地图）</div></div>
-<div class="card"><div class="name">清远住宿</div><div class="desc">长隆酒店 / 别墅 / 市区，价格与带娃设施待比</div></div>
-<div class="card"><div class="name">免门票政策</div><div class="desc">秋假广东多地对深圳市民免首道门票，出发前逐项确认（身份证/居住证核验）</div></div>
+<div class="section-head">带娃提醒</div>
+<div class="card"><div class="name">阿远 4 岁 5 个月 · 阿衡 1 岁 4 个月</div><div class="desc">车程 2.5 小时内、中途服务区停 1 次；阿衡下午要睡一觉；阿远要有能跑的地方；每天回住处不晚于 20:30</div></div>
+<div class="section-head">支付提醒</div>
+<div class="card"><div class="name">现金/扫码</div><div class="desc">高速过路费、门票、部分农家乐可能只收微信/支付宝；别墅押金可能刷卡（带一张信用卡）</div></div>
 <div class="section-head">图例</div>
 <div class="legend">
   <div class="legend-item"><div class="legend-dot" style="background:var(--tint-red)"></div>餐厅</div>
   <div class="legend-item"><div class="legend-dot" style="background:var(--tint-blue)"></div>景点</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-orange)"></div>住宿</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-purple)"></div>交通</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-purple)"></div>酒吧</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-orange)"></div>酒店</div>
 </div>`;
 }
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║  ENGINE — Do not modify below unless customizing behavior   ║
-// ╚══════════════════════════════════════════════════════════════╝
 
 const map = L.map('map', { center: [HOTEL.lat || 35.69, HOTEL.lng || 139.74], zoom: 12, zoomControl: false, attributionControl: true });
 L.control.zoom({ position: 'topright' }).addTo(map);
