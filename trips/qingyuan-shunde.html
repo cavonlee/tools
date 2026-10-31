@@ -243,21 +243,21 @@ const DAYS = [
   { id: 0, label: '总览', color: '#0071e3', locations: [] },
   { id: 1, label: 'D1', date: '11-19 周四', title: '深圳 → 清远佛冈', color: '#ff9500', locations: [
     { name: '景星名苑（出发）', lat: 22.801060, lng: 113.875019, type: 'transport', time: '08:30',
-      desc: '深圳宝安区高田大道 126 号 · 装车出发（儿童安全座椅、阿衡奶粉/辅食备用）',
-      detail: '提前一晚收行李：阿远换洗 3 套＋泳衣、阿衡尿布/奶粉/推车、常用药（退烧/止泻/创可贴）、充电器、保温杯。' },
-    { name: '佛冈碧桂园清泉城（别墅区）', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '11:00',
-      desc: '车程 173km · 约 2 小时 32 分 · 过路费约 ¥95 · 入住放行李',
-      detail: '路线：深圳 → 广深/京港澳高速 → 佛冈出口 → 右转约 5km。中途建议在服务区停 1 次（阿衡活动/换尿布）。\n到达后先入住、给阿衡冲奶午睡。',
+      desc: '深圳宝安高田大道 126 号',
+      detail: '出发前备好：烧烤碳、烧烤食材、儿童安全座椅、阿衡奶粉/尿布/推车、换洗衣服。' },
+    { name: '佛冈碧桂园清泉城（别墅）', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '11:00',
+      desc: '173km · 约 2.5 小时 · 过路费约 ¥95 · 入住',
       budget: '过路费 ¥95 + 油费约 ¥100' },
-    { name: '清泉城/佛冈县城 午餐', lat: 23.853000, lng: 113.625000, type: 'food', time: '12:00',
-      desc: '到店后按现场/点评选，不提前锁；找有汤/粥/肠粉的，孩子都能吃',
-      dianpingKeyword: '佛冈 清泉城 餐厅' },
-    { name: '别墅区休整 · 温泉/泳池', lat: 23.856856, lng: 113.622460, type: 'spot', time: '14:30',
-      desc: '阿衡午睡、阿远泳池或儿童乐园；节奏放慢，第一天不安排远景点',
-      detail: '碧桂园清泉城内有温泉酒店和园区绿化，孩子跑一跑就够。傍晚可以在园区散步拍照（静虹爱拍）。' },
-    { name: '晚餐（园区或佛冈县城）', lat: 23.852509, lng: 113.631508, type: 'food', time: '18:00',
-      desc: '第一天不折腾：园区餐厅或县城 15 分钟内；清远鸡/山坑螺/农家菜都是本地味',
-      dianpingKeyword: '佛冈 清远鸡' }
+    { name: '午餐（到佛冈再找）', lat: 23.853000, lng: 113.625000, type: 'food', time: '12:00',
+      desc: '佛冈县城/清泉城周边，看现场再定',
+      dianpingKeyword: '佛冈 美食' },
+    { name: '别墅午休', lat: 23.855065, lng: 113.620329, type: 'hotel', time: '14:00',
+      desc: '阿衡睡觉，大人也补一觉' },
+    { name: '别墅烧烤（晚餐）', lat: 23.855065, lng: 113.620329, type: 'food', time: '18:00',
+      desc: '碳和食材出发前备好',
+      detail: '清单：烧烤碳、引火酒精块/喷枪、夹子、锡纸、一次性手套、调料（盐/孜然/辣椒粉/烧烤汁）、肉串、鸡翅、玉米、茄子、生菜、饮料、垃圾袋。' },
+    { name: '泡温泉 · 自由活动', lat: 23.856856, lng: 113.622460, type: 'spot', time: '20:00',
+      desc: '温泉/园区散步，早点休息' }
   ] },
   { id: 2, label: 'D2', date: '11-20 周五', title: '清远（待定景点）', color: '#34c759', locations: [] },
   { id: 3, label: 'D3', date: '11-21 周六', title: '清远 → 顺德大良（烧鹅再 + 五里早茶）', color: '#af52de', locations: [] },
@@ -270,19 +270,18 @@ const DAYS = [
 
 function overviewContent() {
   return `
-<div class="hero"><h1>清远 → 顺德 · 4 天 3 晚</h1><p class="subtitle">2026-11-19（周四）～11-22（周日）· 带阿远、阿衡 · 一天一个区域</p></div>
+<div class="hero"><h1>清远 → 顺德</h1><p class="subtitle">2026-11-19 ~ 11-22 · 4 天 3 晚</p></div>
 <div class="info-grid">
-  <div class="info-card"><div class="label">住</div><div class="value">D1–D2 佛冈碧桂园清泉城别墅区 · D3 顺德大良</div></div>
-  <div class="info-card"><div class="label">车程</div><div class="value">深圳→佛冈 173km/2.5h · 佛冈→顺德大良 126km/2h</div></div>
-  <div class="info-card"><div class="label">过路费</div><div class="value">约 ¥95（去程）＋回程约 ¥60</div></div>
-  <div class="info-card"><div class="label">预估总费用</div><div class="value">待定（住宿＋门票＋餐饮确认后补）</div></div>
+  <div class="info-card"><div class="label">住</div><div class="value">佛冈碧桂园清泉城别墅</div></div>
+  <div class="info-card"><div class="label">车程</div><div class="value">深圳→佛冈 173km / 2.5h</div></div>
+  <div class="info-card"><div class="label">过路费</div><div class="value">去程约 ¥95</div></div>
+  <div class="info-card"><div class="label">总费用</div><div class="value">确认后再补</div></div>
 </div>
-<div class="section-head">行程概览</div>
+<div class="section-head">行程</div>
 <div class="day-list">${DAYS.slice(1).map(d=>`<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${d.color}"></span>${d.label} · ${d.title}</div><div class="desc">${d.date}</div></div>`).join('')}</div>
-<div class="section-head">带娃提醒</div>
-<div class="card"><div class="name">阿远 4 岁 5 个月 · 阿衡 1 岁 4 个月</div><div class="desc">车程 2.5 小时内、中途服务区停 1 次；阿衡下午要睡一觉；阿远要有能跑的地方；每天回住处不晚于 20:30</div></div>
-<div class="section-head">支付提醒</div>
-<div class="card"><div class="name">现金/扫码</div><div class="desc">高速过路费、门票、部分农家乐可能只收微信/支付宝；别墅押金可能刷卡（带一张信用卡）</div></div>
+<div class="section-head">要带</div>
+<div class="card"><div class="name">烧烤</div><div class="desc">碳、食材、调料、锡纸、手套、垃圾袋</div></div>
+<div class="card"><div class="name">孩子</div><div class="desc">安全座椅、奶粉、尿布、推车、换洗衣服</div></div>
 <div class="section-head">图例</div>
 <div class="legend">
   <div class="legend-item"><div class="legend-dot" style="background:var(--tint-red)"></div>餐厅</div>
