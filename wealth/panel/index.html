@@ -182,9 +182,8 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
       var ty = (w.target_yield !== null && w.target_yield !== undefined) ? w.target_yield : YTARGET[w.name];
       var y = w.yield;
       var pct = (y !== null && y !== undefined && ty) ? Math.max(0, Math.min(100, (y / ty) * 100)) : 0;
-      var tag = tagFor(w, ty, y);
       html += '<div class="card" data-idx="' + idx + '">';
-      html += '<div class="r1"><div class="nm">' + w.name + '</div><span class="tag ' + tag.k + '">' + tag.t + '</span></div>';
+      html += '<div class="r1"><div class="nm">' + w.name + '</div></div>';
       var yTxt = (y === null || y === undefined) ? '待补' : ((w.yieldApprox ? '≈' : '') + (y > 0 ? '+' : '') + y.toFixed(2) + '%');
       html += '<div class="amt-row"><div class="amt">' + fmt(w.actual) + '</div><div><div class="yk">年化</div><div class="yv ' + cls(y || 0) + '">' + yTxt + '</div></div></div>';
       html += '<div class="ybar"><i style="--w:' + pct + '%"></i><u></u></div>';
