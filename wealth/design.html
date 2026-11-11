@@ -1,45 +1,47 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>财富自由面板 · 设计稿 v1</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#E9E9EE;font-family:-apple-system,"PingFang SC",system-ui,sans-serif;color:#1D1D1F;padding:24px 16px 40px}
+<title>财富自由面板 · 设计稿 v2</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#E9E9EE;font-family:-apple-system,"PingFang SC",system-ui,sans-serif;color:#1D1D1F;padding:24px 16px 40px}
 h1{font-size:20px;margin:0 0 4px}.sub{font-size:12.5px;color:#8E8E93;margin-bottom:20px}
 .frames{display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
-.frame{display:flex;flex-direction:column;gap:8px}
-.frame .lb{font-size:12.5px;color:#8E8E93;padding-left:4px}
+.frame{display:flex;flex-direction:column;gap:8px}.frame .lb{font-size:12.5px;color:#8E8E93;padding-left:4px}
 .phone{width:390px;height:844px;border-radius:22px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);background:#F2F2F7}
-.phone .wrap{width:100%;height:100%}
-</style></head><body>
-<h1>财富自由面板 · 设计稿 v1</h1>
-<div class="sub">六类卡同构 · 卡内明细第一行＝本月增长 · 净资产展开＝当月/今年 · 年化保留</div>
+.phone .wrap{width:100%;height:100%}</style></head><body>
+<h1>财富自由面板 · 设计稿 v2</h1>
+<div class="sub">六类卡都显示年化 · 卡内明细第一行＝本月增长 · 净资产展开＝当月/今年</div>
 <div class="frames">
-<style>.s0 .wrap{width:390px;height:844px;box-sizing:border-box;padding:20px 16px 24px;display:flex;flex-direction:column;gap:14px;background:#F2F2F7}
+<style>.s0 .wrap{margin:0;background:#F2F2F7;font-family:-apple-system,"PingFang SC",system-ui,sans-serif;color:#1D1D1F}
+.s0 .wrap{width:390px;height:844px;box-sizing:border-box;padding:20px 16px 24px;display:flex;flex-direction:column;gap:14px;background:#F2F2F7;overflow:hidden}
 .s0 .hd{display:flex;align-items:flex-end;justify-content:space-between}
 .s0 .hd h1{margin:0;font-size:22px;letter-spacing:-.02em}
 .s0 .hd .d{font-size:11.5px;color:#8E8E93}
 .s0 .net{background:#FFFFFF;border-radius:18px;padding:18px 18px 14px}
 .s0 .net .lab{font-size:12.5px;color:#8E8E93;margin-bottom:6px}
 .s0 .net .big{font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.05}
-.s0 .net .f-row{display:flex;align-items:center;gap:8px;margin-top:10px}
-.s0 .net .f{font-size:12.5px;color:#8E8E93}
+.s0 .net .f-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.s0 .net .f{font-size:12px;color:#8E8E93}
 .s0 .pill{font-size:11.5px;padding:3px 8px;border-radius:999px;background:#F2F2F7;color:#6E6E73}
 .s0 .delta{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:.5px solid #EBEBF0}
 .s0 .delta .txt{font-size:13.5px}
 .s0 .up{color:#E5484D}
 .s0 .down{color:#23A26D}
+.s0 .mid{color:#6E6E73}
 .s0 .chev{width:7px;height:7px;border-right:1.6px solid #C7C7CC;border-bottom:1.6px solid #C7C7CC;transform:rotate(-45deg)}
-.s0 .sec{font-size:12.5px;color:#8E8E93;margin:2px 4px -2px}
-.s0 .card{background:#FFFFFF;border-radius:16px;padding:14px 16px}
+.s0 .sec{font-size:12.5px;color:#8E8E93;margin:2px 4px -4px}
+.s0 .card{background:#FFFFFF;border-radius:16px;padding:13px 16px}
 .s0 .card .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.s0 .card .nm{font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px}
+.s0 .card .nm{font-size:15px;font-weight:600}
 .s0 .tag{font-size:10.5px;padding:2.5px 7px;border-radius:999px}
 .s0 .over{background:#FDECEC;color:#C42B2B}
 .s0 .short{background:#FFF4E5;color:#A85B00}
-.s0 .ok{background:#E8F6EE;color:#1E7A4C}
 .s0 .mid{background:#F2F2F7;color:#6E6E73}
-.s0 .card .amt{font-size:21px;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+.s0 .amt-row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:5px}
+.s0 .amt{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.s0 .y{text-align:right;line-height:1.15}
+.s0 .y .k{font-size:10px;color:#AEAEB2}
+.s0 .y .v{font-size:14px;font-weight:600}
 .s0 .card .sub{font-size:11.5px;color:#8E8E93;margin-top:3px}
-.s0 .bar{height:4px;border-radius:999px;background:#EDEDF2;margin-top:10px;overflow:hidden}
+.s0 .bar{height:4px;border-radius:999px;background:#EDEDF2;margin-top:9px;overflow:hidden}
 .s0 .bar i{display:block;height:100%;border-radius:999px}
 .s0 .foot{margin-top:auto;font-size:11px;color:#AEAEB2;text-align:center}</style>
 <div class="frame"><div class="lb">总览</div><div class="phone s0"><div class="wrap">
@@ -62,54 +64,72 @@ h1{font-size:20px;margin:0 0 4px}.sub{font-size:12.5px;color:#8E8E93;margin-bott
     </div>
   </div>
 
-  <div class="sec">六类钱包</div>
+  <div class="sec">六类钱包 · 年化</div>
 
   <div class="card">
     <div class="r1"><div class="nm">零钱</div><span class="tag over">超配</span></div>
-    <div class="amt">11,626.51</div>
-    <div class="sub">目标 5,000 · 占金融资产 4.2%</div>
+    <div class="amt-row">
+      <div class="amt">11,626.51</div>
+      <div class="y"><div class="k">年化</div><div class="v up">0.1%</div></div>
+    </div>
+    <div class="sub">目标 5,000 · 活期利息 0.1%</div>
     <div class="bar"><i style="width:100%;background:#E5484D"></i></div>
   </div>
 
   <div class="card">
     <div class="r1"><div class="nm">货币基金</div><span class="tag short">缺 17,160</span></div>
-    <div class="amt">28,890.16</div>
+    <div class="amt-row">
+      <div class="amt">28,890.16</div>
+      <div class="y"><div class="k">年化</div><div class="v up">1.4%</div></div>
+    </div>
     <div class="sub">目标 46,050 · 2.4 个月安全垫</div>
     <div class="bar"><i style="width:62.7%;background:#F0A020"></i></div>
   </div>
 
   <div class="card">
     <div class="r1"><div class="nm">固收类</div><span class="tag short">缺 12,578</span></div>
-    <div class="amt">130,026.44</div>
-    <div class="sub">目标 142,604.87 · 目标收益 3.0%</div>
+    <div class="amt-row">
+      <div class="amt">130,026.44</div>
+      <div class="y"><div class="k">年化</div><div class="v mid">待补</div></div>
+    </div>
+    <div class="sub">目标 142,604.87 · 静虹管</div>
     <div class="bar"><i style="width:91.2%;background:#F0A020"></i></div>
   </div>
 
   <div class="card">
     <div class="r1"><div class="nm">权益类</div><span class="tag over">超 5,306</span></div>
-    <div class="amt">66,422.39</div>
-    <div class="sub">家荣 · 目标 61,116 · 年化 −0.5%</div>
+    <div class="amt-row">
+      <div class="amt">66,422.39</div>
+      <div class="y"><div class="k">年化</div><div class="v down">−0.5%</div></div>
+    </div>
+    <div class="sub">目标 61,116 · 家荣管</div>
     <div class="bar"><i style="width:100%;background:#E5484D"></i></div>
   </div>
 
   <div class="card">
     <div class="r1"><div class="nm">养老金 🔒</div><span class="tag mid">不配比</span></div>
-    <div class="amt">22,366.45</div>
-    <div class="sub">中邮理财 ＋ A500 · 年化 −6.8%</div>
+    <div class="amt-row">
+      <div class="amt">22,366.45</div>
+      <div class="y"><div class="k">年化</div><div class="v down">−6.8%</div></div>
+    </div>
+    <div class="sub">中邮理财 ＋ A500</div>
     <div class="bar"><i style="width:56%;background:#8E8E93"></i></div>
   </div>
 
   <div class="card">
     <div class="r1"><div class="nm">另类保障（实物金）</div><span class="tag mid">不配比</span></div>
-    <div class="amt">486,895.92</div>
-    <div class="sub">38 件 · 664 g · 按 10-16 金价估值</div>
+    <div class="amt-row">
+      <div class="amt">486,895.92</div>
+      <div class="y"><div class="k">年化</div><div class="v mid">0%</div></div>
+    </div>
+    <div class="sub">38 件 · 664 g · 10-16 金价估值</div>
     <div class="bar"><i style="width:100%;background:#8E8E93"></i></div>
   </div>
 
   <div class="foot">数字为 2026-10-26 快照 · 每月 10 号更新</div>
-</div>
-</div></div>
-<style>.s1 .wrap{width:390px;height:844px;box-sizing:border-box;padding:20px 16px 24px;display:flex;flex-direction:column;gap:12px;background:#F2F2F7}
+</div></div></div>
+<style>.s1 .wrap{margin:0;background:#F2F2F7;font-family:-apple-system,"PingFang SC",system-ui,sans-serif;color:#1D1D1F}
+.s1 .wrap{width:390px;height:844px;box-sizing:border-box;padding:20px 16px 24px;display:flex;flex-direction:column;gap:12px;background:#F2F2F7}
 .s1 .hd{display:flex;align-items:center;justify-content:space-between}
 .s1 .hd .back{font-size:13px;color:#0071E3}
 .s1 .hd .t{font-size:17px;font-weight:600}
@@ -154,9 +174,9 @@ h1{font-size:20px;margin:0 0 4px}.sub{font-size:12.5px;color:#8E8E93;margin-bott
     <div class="item"><span>待申购固收</span><span>11,000.00</span></div>
   </div>
   <div class="foot">展开后：明细第一行就是「本月增长」（只显示金额）</div>
-</div>
-</div></div>
-<style>.s2 .wrap{width:390px;height:844px;box-sizing:border-box;padding:20px 16px 24px;display:flex;flex-direction:column;gap:12px;background:#F2F2F7}
+</div></div></div>
+<style>.s2 .wrap{margin:0;background:#F2F2F7;font-family:-apple-system,"PingFang SC",system-ui,sans-serif;color:#1D1D1F}
+.s2 .wrap{width:390px;height:844px;box-sizing:border-box;padding:20px 16px 24px;display:flex;flex-direction:column;gap:12px;background:#F2F2F7}
 .s2 .hd{display:flex;align-items:center;justify-content:space-between}
 .s2 .hd .back{font-size:13px;color:#0071E3}
 .s2 .hd .t{font-size:17px;font-weight:600}
@@ -200,6 +220,5 @@ h1{font-size:20px;margin:0 0 4px}.sub{font-size:12.5px;color:#8E8E93;margin-bott
     </div>
   </div>
   <div class="foot">数据来源：每月 10 号截图 → 布丁整理 → 快照</div>
-</div>
-</div></div>
+</div></div></div>
 </div></body></html>
