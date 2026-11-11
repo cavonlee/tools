@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>财富自由</title>
+<style>
+:root{
+  --bg:#F2F2F7;--card:#FFFFFF;--ink:#1D1D1F;--ink2:#6E6E73;--ink3:#AEAEB2;
+  --line:#EBEBF0;--track:#EDEDF2;--up:#E5484D;--down:#23A26D;--accent:#0071E3;
+  --warn:#F0A020;--tag-over:#FDECEC;--tag-over-t:#C42B2B;--tag-short:#FFF4E5;--tag-short-t:#A85B00;
+  --tag-mid:#F2F2F7;--tag-mid-t:#6E6E73;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#000000;--card:#1C1C1E;--ink:#F5F5F7;--ink2:#A1A1A6;--ink3:#6E6E73;
+    --line:#2C2C2E;--track:#2C2C2E;--up:#FF6B6B;--down:#34C77B;--accent:#0A84FF;
+    --warn:#F5A623;--tag-over:#3A1F1F;--tag-over-t:#FF8A8A;--tag-short:#3A2A12;--tag-short-t:#FFC46B;
+    --tag-mid:#2C2C2E;--tag-mid-t:#A1A1A6;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang SC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:430px;margin:0 auto;padding:18px 16px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.hd{display:flex;align-items:flex-end;justify-content:space-between}
+.hd h1{margin:0;font-size:22px;letter-spacing:-.02em}
+.hd .d{font-size:11.5px;color:var(--ink3)}
+.net{background:var(--card);border-radius:18px;padding:18px 16px 12px;overflow:hidden}
+.net .lab{font-size:12.5px;color:var(--ink2)}
+.net .big{font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.08;margin-top:4px;font-variant-numeric:tabular-nums}
+.net .frow{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.net .f{font-size:12px;color:var(--ink3)}
+.pill{font-size:11.5px;padding:3px 8px;border-radius:999px;background:var(--track);color:var(--ink2)}
+.entry{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:.5px solid var(--line);cursor:pointer}
+.entry .txt{font-size:13.5px}
+.entry:first-of-type{border-top:.5px solid var(--line)}
+.up{color:var(--up)}.down{color:var(--down)}.mid{color:var(--ink2)}
+.chev{width:7px;height:7px;border-right:1.6px solid var(--ink3);border-bottom:1.6px solid var(--ink3);transform:rotate(-45deg);transition:transform .28s ease;flex:none}
+.chev.open{transform:rotate(45deg)}
+.sub-panel{max-height:0;overflow:hidden;transition:max-height .34s cubic-bezier(.25,.8,.3,1),opacity .25s ease;opacity:0}
+.sub-panel.open{opacity:1}
+.sub-inner{padding:12px 0 4px}
+.srow{display:flex;justify-content:space-between;font-size:13px;padding:6px 0}
+.srow .k{color:var(--ink2)}
+.sec{font-size:12.5px;color:var(--ink2);margin:2px 4px -2px}
+.card{background:var(--card);border-radius:16px;padding:13px 16px;cursor:pointer;transition:transform .16s ease}
+.card:active{transform:scale(.985)}
+.r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nm{font-size:15px;font-weight:600}
+.tag{font-size:10.5px;padding:2.5px 7px;border-radius:999px;white-space:nowrap}
+.over{background:var(--tag-over);color:var(--tag-over-t)}
+.short{background:var(--tag-short);color:var(--tag-short-t)}
+.mid{background:var(--tag-mid);color:var(--tag-mid-t)}
+.amt-row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:5px}
+.amt{font-size:21px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.yk{font-size:10.5px;color:var(--ink3);text-align:right;line-height:1}
+.yv{font-size:13.5px;font-weight:600;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums}
+.ybar{position:relative;height:6px;border-radius:999px;background:var(--track);margin-top:9px}
+.ybar i{display:block;height:100%;border-radius:999px;width:0;transition:width .7s cubic-bezier(.22,.9,.24,1)}
+.ybar u{position:absolute;right:0;top:-3px;width:2px;height:12px;background:var(--ink3);opacity:.55;border-radius:2px}
+.card .sub{font-size:11.5px;color:var(--ink3);margin-top:5px}
+.foot{margin-top:6px;font-size:11px;color:var(--ink3);text-align:center}
+
+/* 展开明细 */
+.detail{max-height:0;overflow:hidden;transition:max-height .34s cubic-bezier(.25,.8,.3,1),opacity .22s ease;opacity:0}
+.detail.open{opacity:1}
+.detail .in{padding:10px 0 2px}
+.grow{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:11px;background:var(--track);margin-bottom:8px}
+.grow .k{font-size:12.5px;color:var(--ink2)}
+.grow .v{font-size:14.5px;font-weight:600}
+.it{display:flex;justify-content:space-between;padding:9px 0;border-bottom:.5px solid var(--line);font-size:13.5px}
+.it:last-child{border-bottom:0}
+.it .o{font-size:11px;color:var(--ink3);margin-left:6px}
+.it .n2{color:var(--ink2)}
+
+/* 饼图 sheet */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .26s ease;z-index:40}
+.sheet.open{opacity:1;pointer-events:auto}
+.sheet-in{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:20px 20px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .32s cubic-bezier(.25,.8,.3,1);max-width:430px;margin:0 auto}
+.sheet.open .sheet-in{transform:translateY(0)}
+.sheet h3{margin:0 0 2px;font-size:16px}
+.sheet .st{font-size:12px;color:var(--ink3);margin-bottom:12px}
+.donut{width:190px;height:190px;margin:6px auto 14px;border-radius:50%;position:relative}
+.donut::after{content:"";position:absolute;inset:42px;background:var(--card);border-radius:50%}
+.donut .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+.donut .ctr .a{font-size:10.5px;color:var(--ink3)}
+.donut .ctr .b{font-size:16px;font-weight:700;margin-top:2px}
+.legend{display:flex;flex-direction:column;gap:9px}
+.lg{display:flex;align-items:center;gap:9px;font-size:13.5px}
+.lg .dot{width:9px;height:9px;border-radius:3px;flex:none}
+.lg .n{flex:1}
+.lg .p{font-size:12px;color:var(--ink2);margin-right:8px}
+.lg .v{font-weight:600;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="sheet" id="sheet"><div class="sheet-in" id="sheetIn"></div></div>
+
+<script>
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var fmt = function (n) { return (n || 0).toLocaleString('zh-CN', { maximumFractionDigits: 2 }); };
+  var wan = function (n) { return (n / 10000).toFixed(2) + ' 万'; };
+  var cls = function (v) { return v > 0 ? 'up' : (v < 0 ? 'down' : 'mid'); };
+  var sign = function (v) { return (v > 0 ? '+' : '') + fmt(v); };
+
+  // 五类：零钱 + 货币基金 合并为「现金」
+  var MERGE = { '零钱': '现金', '货币基金': '现金' };
+  var YTARGET = { '现金': 1.5, '固收类': 3.0, '权益类': 6.0, '养老金 🔒': 6.0, '另类保障（实物金）': null };
+  var COLOR = { '现金': 'var(--warn)', '固收类': '#C7A26B', '权益类': 'var(--up)', '养老金 🔒': 'var(--accent)', '另类保障（实物金）': 'var(--ink3)' };
+
+  function load() {
+    fetch('data.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render).catch(function (e) {
+      $('#app').innerHTML = '<div class="net"><div class="lab">数据加载失败</div><div class="sub">' + e.message + '</div></div>';
+    });
+  }
+
+  function render(d) {
+    var a = d.asset_tiers || {};
+    var raw = a.wallets || [];
+    var order = [];
+    var map = {};
+    raw.forEach(function (w) {
+      var name = MERGE[w.name] || w.name;
+      if (!map[name]) { map[name] = { name: name, actual: 0, target: 0, yield: w.yield_pct, target_yield: w.yield_target_pct, items: [] }; order.push(name); }
+      map[name].actual += w.actual || 0;
+      map[name].target += w.target || 0;
+      (w.items || []).forEach(function (i) { map[name].items.push({ name: i.name, amount: i.amount, owner: i.owner }); });
+      if (w.yield_pct !== null && w.yield_pct !== undefined) map[name].yield = w.yield_pct;
+    });
+    var wallets = order.map(function (n) { return map[n]; });
+
+    var net = a.net_worth || {};
+    var growth = d.growth || {};
+    var total = wallets.reduce(function (s, w) { return s + w.actual; }, 0);
+
+    var html = '';
+    html += '<div class="hd"><h1>财富自由</h1><div class="d">数据 ' + (a.as_of || '—') + '</div></div>';
+    html += '<div class="net">';
+    html += '<div class="lab">净资产</div><div class="big">' + wan(net.total || 0) + '</div>';
+    html += '<div class="frow"><span class="f">自由度</span><span class="pill">' + (d.freedom_pct === undefined ? '—' : (d.freedom_pct > 0 ? '+' : '') + d.freedom_pct.toFixed(1) + '%') + '</span>';
+    html += '<span class="f">被动 ' + fmt(d.passive_income_monthly || 0) + ' / 支出 ' + fmt(d.monthly_expense || 0) + '</span></div>';
+    html += '<div class="entry" id="eNe"><div class="txt">本月 <span class="' + cls(growth.mom || 0) + '">' + (growth.mom === undefined ? '—' : sign(growth.mom)) + '</span>　·　今年 <span class="' + cls(growth.yoy || 0) + '">' + (growth.yoy === undefined ? '—' : sign(growth.yoy)) + '</span> <span class="f">（自 ' + (growth.since || '—') + ' 起）</span></div><div class="chev" id="cNe"></div></div>';
+    html += '<div class="sub-panel" id="pNe"><div class="sub-inner">';
+    html += '<div class="srow"><span class="k">当月</span><span class="' + cls(growth.mom || 0) + '">' + (growth.mom === undefined ? '—' : sign(growth.mom)) + '</span></div>';
+    html += '<div class="srow"><span class="k">今年</span><span class="' + cls(growth.yoy || 0) + '">' + (growth.yoy === undefined ? '—' : sign(growth.yoy)) + '</span></div>';
+    html += '<div class="srow"><span class="k">本月投资盈亏</span><span class="' + cls(growth.invest || 0) + '">' + (growth.invest === undefined ? '—' : sign(growth.invest)) + '</span></div>';
+    html += '<div class="srow"><span class="k" style="font-size:11.5px">口径：净资产变化 − 内部转账净额</span><span></span></div>';
+    html += '</div></div>';
+    html += '<div class="entry" id="ePie"><div class="txt" style="color:var(--accent)">总资产构成 · 饼图</div><div class="chev" id="cPie"></div></div>';
+    html += '</div>';
+
+    html += '<div class="sec">五类 · 年化对比</div>';
+    wallets.forEach(function (w, idx) {
+      var ty = (w.target_yield !== null && w.target_yield !== undefined) ? w.target_yield : YTARGET[w.name];
+      var y = w.yield;
+      var pct = (y !== null && y !== undefined && ty) ? Math.max(0, Math.min(100, y / ty * 100)) : 0;
+      var tag = tagFor(w, ty, y);
+      html += '<div class="card" data-idx="' + idx + '">';
+      html += '<div class="r1"><div class="nm">' + w.name + '</div><span class="tag ' + tag.k + '">' + tag.t + '</span></div>';
+      html += '<div class="amt-row"><div class="amt">' + fmt(w.actual) + '</div><div><div class="yk">年化</div><div class="yv ' + cls(y || 0) + '">' + (y === null || y === undefined ? '待补' : ((y > 0 ? '+' : '') + y.toFixed(2) + '%')) + '</div></div></div>';
+      html += '<div class="ybar"><i style="--w:' + pct + '%"></i><u></u></div>';
+      html += '<div class="sub">实际 ' + (y === null || y === undefined ? '待补' : y.toFixed(2) + '%') + ' ／ 目标 ' + (ty ? ty.toFixed(1) + '%' : '无目标') + '</div>';
+      html += '<div class="detail"><div class="in">';
+      var gm = w.mom;
+      html += '<div class="grow"><div class="k">本月增长</div><div class="v ' + cls(gm || 0) + '">' + (gm === undefined ? '待本期录入' : sign(gm)) + '</div></div>';
+      w.items.forEach(function (i) {
+        html += '<div class="it"><span>' + i.name + (i.owner ? '<span class="o">' + i.owner + '</span>' : '') + '</span><span class="n2">' + fmt(i.amount) + '</span></div>';
+      });
+      html += '</div></div></div>';
+    });
+
+    html += '<div class="foot">五类：现金＋固收＋权益＋养老金＋另类 · 每月 10 号更新</div>';
+    $('#app').innerHTML = html;
+
+    // 动画：进场上浮 + 条填充
+    requestAnimationFrame(function () {
+      document.querySelectorAll('.ybar i').forEach(function (el, i) {
+        setTimeout(function () { el.style.width = el.style.getPropertyValue('--w') || '0%'; }, 120 + i * 70);
+      });
+    });
+
+    // 展开/收起（卡片）
+    document.querySelectorAll('.card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        var det = card.querySelector('.detail');
+        var open = det.classList.contains('open');
+        if (open) { det.style.maxHeight = '0px'; det.classList.remove('open'); }
+        else { det.classList.add('open'); det.style.maxHeight = det.scrollHeight + 40 + 'px'; }
+      });
+    });
+
+    // 净资产展开
+    bindToggle('eNe', 'pNe', 'cNe');
+    // 饼图
+    $('#ePie').addEventListener('click', function () { openPie(wallets, total); });
+  }
+
+  function bindToggle(entryId, panelId, chevId) {
+    var e = document.getElementById(entryId), p = document.getElementById(panelId), c = document.getElementById(chevId);
+    if (!e) return;
+    e.addEventListener('click', function () {
+      if (p.classList.contains('open')) { p.style.maxHeight = '0px'; p.classList.remove('open'); c.classList.remove('open'); }
+      else { p.classList.add('open'); p.style.maxHeight = p.scrollHeight + 20 + 'px'; c.classList.add('open'); }
+    });
+  }
+
+  function tagFor(w, ty, y) {
+    if (!ty) return { k: 'mid', t: '不配比' };
+    if (y === null || y === undefined) return { k: 'short', t: '待补年化' };
+    if (y >= ty) return { k: 'mid', t: '达标' };
+    return { k: 'short', t: '差 ' + (ty - y).toFixed(1) + ' 个点' };
+  }
+
+  function openPie(wallets, total) {
+    var colors = ['var(--warn)', '#C7A26B', 'var(--up)', 'var(--accent)', 'var(--ink3)'];
+    var sum = wallets.reduce(function (s, w) { return s + w.actual; }, 0) || 1;
+    var stops = [], acc = 0;
+    wallets.forEach(function (w, i) {
+      var p = w.actual / sum * 100;
+      stops.push(colors[i % colors.length] + ' ' + acc.toFixed(2) + '% ' + (acc + p).toFixed(2) + '%');
+      acc += p;
+    });
+    var legend = wallets.map(function (w, i) {
+      var p = (w.actual / sum * 100).toFixed(1);
+      return '<div class="lg"><span class="dot" style="background:' + colors[i % colors.length] + '"></span><span class="n">' + w.name + '</span><span class="p">' + p + '%</span><span class="v">' + fmt(w.actual) + '</span></div>';
+    }).join('');
+    var fin = wallets.filter(function (w) { return w.name !== '另类保障（实物金）'; }).reduce(function (s, w) { return s + w.actual; }, 0);
+    var finPct = (fin / sum * 100).toFixed(1);
+    $('#sheetIn').innerHTML = '<h3>总资产构成</h3><div class="st">含实物金 · 总 ' + fmt(sum) + '</div>' +
+      '<div class="donut" style="background:conic-gradient(' + stops.join(',') + ')"><div class="ctr"><div class="a">金融资产</div><div class="b">' + finPct + '%</div></div></div>' +
+      '<div class="legend">' + legend + '</div>';
+    $('#sheet').classList.add('open');
+  }
+  $('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') $('#sheet').classList.remove('open'); });
+
+  load();
+})();
+</script>
+</body>
+</html>
