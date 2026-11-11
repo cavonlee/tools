@@ -43,6 +43,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
 .srow{display:flex;justify-content:space-between;font-size:13px;padding:6px 0}
 .srow .k{color:var(--ink2)}
 .sec{font-size:12.5px;color:var(--ink2);margin:2px 4px -2px}
+.sec2{font-size:11.5px;color:var(--ink3);margin:2px 0 4px}
 .card{background:var(--card);border-radius:16px;padding:13px 16px;cursor:pointer;transition:transform .16s ease}
 .card:active{transform:scale(.985)}
 .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -154,6 +155,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
 
     var html = '';
     html += '<div class="hd"><h1>财富自由</h1><div class="d">数据 ' + (a.as_of || '—') + '</div></div>';
+    var byPerson = personSplit(raw, a.liabilities || net.liabilities || 0);
     html += '<div class="net">';
     html += '<div class="lab">净资产</div><div class="big">' + wan(net.total || 0) + '</div>';
     html += '<div class="frow"><span class="f">自由度</span><span class="pill">' + (d.freedom_pct === undefined ? '—' : (d.freedom_pct > 0 ? '+' : '') + d.freedom_pct.toFixed(1) + '%') + '</span>';
@@ -163,16 +165,23 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
     html += '<div class="srow"><span class="k">当月</span><span class="' + cls(growth.mom || 0) + '">' + (growth.mom === undefined ? '—' : sign(growth.mom)) + '</span></div>';
     html += '<div class="srow"><span class="k">今年</span><span class="' + cls(growth.yoy || 0) + '">' + (growth.yoy === undefined ? '—' : sign(growth.yoy)) + '</span></div>';
     html += '<div class="srow"><span class="k">本月投资盈亏</span><span class="' + cls(growth.invest || 0) + '">' + (growth.invest === undefined ? '—' : sign(growth.invest)) + '</span></div>';
-    html += '<div class="srow"><span class="k" style="font-size:11.5px">口径：净资产变化 − 内部转账净额</span><span></span></div>';
+    html += '<div style="height:8px"></div>';
+    html += '<div class="sec2">按人拆分</div>';
+    byPerson.list.forEach(function (p) {
+      html += '<div class="srow"><span class="k">' + p.name + '</span><span class="' + cls(p.amount) + '">' + fmt(p.amount) + '</span></div>';
+    });
+    html += '<div style="height:10px"></div>';
+    html += '<div class="sec2">资产构成</div>';
+    html += '<div id="pieInline"></div>';
+    html += '<div class="srow" style="margin-top:6px"><span class="k" style="font-size:11.5px">口径：净资产变化 − 内部转账净额；实物金按共同</span><span></span></div>';
     html += '</div></div>';
-    html += '<div class="entry" id="ePie"><div class="txt" style="color:var(--accent)">总资产构成 · 饼图</div><div class="chev" id="cPie"></div></div>';
     html += '</div>';
 
     html += '<div class="sec">五类 · 年化对比</div>';
     wallets.forEach(function (w, idx) {
       var ty = (w.target_yield !== null && w.target_yield !== undefined) ? w.target_yield : YTARGET[w.name];
       var y = w.yield;
-      var pct = (y !== null && y !== undefined && ty) ? Math.max(0, Math.min(100, y / ty * 100)) : 0;
+      var pct = (y !== null && y !== undefined && ty) ? Math.max(0, Math.min(100, (y / ty) * 100)) : 0;
       var tag = tagFor(w, ty, y);
       html += '<div class="card" data-idx="' + idx + '">';
       html += '<div class="r1"><div class="nm">' + w.name + '</div><span class="tag ' + tag.k + '">' + tag.t + '</span></div>';
@@ -212,10 +221,48 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
       });
     });
 
+    var pieBox = document.getElementById('pieInline');
+    if (pieBox) pieBox.innerHTML = pieHTML(wallets);
     // 净资产展开
     bindToggle('eNe', 'pNe', 'cNe');
-    // 饼图
-    $('#ePie').addEventListener('click', function () { openPie(wallets, total); });
+  }
+
+  function personSplit(raw, liab) {
+    var per = { '家荣': 0, '静虹': 0 };
+    var common = 0;
+    raw.forEach(function (w) {
+      (w.items || []).forEach(function (i) {
+        if (i.owner === '家荣') per['家荣'] += i.amount || 0;
+        else if (i.owner === '静虹') per['静虹'] += i.amount || 0;
+        else common += i.amount || 0;
+      });
+    });
+    // 负债算在家荣（信用卡在他名下）
+    per['家荣'] -= (typeof liab === 'number' ? liab : (liab.total || 0));
+    var list = [
+      { name: '家荣', amount: round2(per['家荣']) },
+      { name: '静虹', amount: round2(per['静虹']) },
+      { name: '共同（实物金）', amount: round2(common) }
+    ];
+    return { list: list, per: per, common: common };
+  }
+  function round2(n) { return Math.round(n * 100) / 100; }
+
+  function pieHTML(wallets) {
+    var colors = ['var(--warn)', '#C7A26B', 'var(--up)', 'var(--accent)', 'var(--ink3)'];
+    var sum = wallets.reduce(function (s, w) { return s + w.actual; }, 0) || 1;
+    var stops = [], acc = 0;
+    wallets.forEach(function (w, i) {
+      var p = w.actual / sum * 100;
+      stops.push(colors[i % colors.length] + ' ' + acc.toFixed(2) + '% ' + (acc + p).toFixed(2) + '%');
+      acc += p;
+    });
+    var fin = wallets.filter(function (w) { return w.name !== '另类保障（实物金）'; }).reduce(function (s, w) { return s + w.actual; }, 0);
+    var legend = wallets.map(function (w, i) {
+      var p = (w.actual / sum * 100).toFixed(1);
+      return '<div class="lg"><span class="dot" style="background:' + colors[i % colors.length] + '"></span><span class="n">' + w.name + '</span><span class="p">' + p + '%</span><span class="v">' + fmt(w.actual) + '</span></div>';
+    }).join('');
+    return '<div class="donut" style="width:150px;height:150px;margin:6px auto 10px;background:conic-gradient(' + stops.join(',') + ')"><div class="ctr"><div class="a">金融资产</div><div class="b">' + (fin / sum * 100).toFixed(1) + '%</div></div></div>' + '<div class="legend">' + legend + '</div>';
   }
 
   function bindToggle(entryId, panelId, chevId) {
