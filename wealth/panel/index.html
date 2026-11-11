@@ -157,7 +157,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
     var html = '';
     html += '<div class="hd"><h1>财富自由</h1><div class="d">数据 ' + (a.as_of || '—') + '</div></div>';
     var byPerson = personSplit(raw, a.liabilities || net.liabilities || 0);
-    html += '<div class="net">';
+    html += '<div class="net" id="netCard">';
     html += '<div class="lab">净资产</div><div class="big">' + wan(net.total || 0) + '</div>';
     var fr = (d.freedom_pct === undefined) ? null : d.freedom_pct;
     var frTxt = (fr === null) ? '—' : ((fr > 0 ? '+' : '') + fr.toFixed(1) + '%');
@@ -239,8 +239,10 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
 
     var pieBox = document.getElementById('pieInline');
     if (pieBox) pieBox.innerHTML = pieHTML(wallets);
-    // 净资产展开
-    bindToggle('eNe', 'pNe', 'cNe');
+    // 整张净资产卡可点开
+    bindToggle('netCard', 'pNe', 'cNe');
+    var eNe = document.getElementById('eNe');
+    if (eNe) eNe.addEventListener('click', function (ev) { ev.stopPropagation(); });
   }
 
   function personSplit(raw, liab) {
