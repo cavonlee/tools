@@ -32,9 +32,9 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
 .net .f{font-size:12px;color:var(--ink3)}
 .pill{font-size:11.5px;color:var(--ink2)}
 .fv{font-size:13px;font-weight:600}
-.entry{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:.5px solid var(--line);cursor:pointer}
+.entry{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:0;cursor:pointer}
 .entry .txt{font-size:13.5px}
-.entry:first-of-type{border-top:.5px solid var(--line)}
+
 .up{color:var(--up)}.down{color:var(--down)}.mid{color:var(--ink2)}
 .chev{width:7px;height:7px;border-right:1.6px solid var(--ink3);border-bottom:1.6px solid var(--ink3);transform:rotate(-45deg);transition:transform .28s ease;flex:none}
 .chev.open{transform:rotate(45deg)}
@@ -184,7 +184,6 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
     html += '<div style="height:10px"></div>';
     html += '<div class="sec2">资产构成</div>';
     html += '<div id="pieInline"></div>';
-    html += '<div class="srow" style="margin-top:6px"><span class="k" style="font-size:11.5px">口径：净资产变化 − 内部转账净额；实物金按共同</span><span></span></div>';
     html += '</div></div>';
     html += '</div>';
 
@@ -197,7 +196,9 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
       html += '<div class="r1"><div class="nm">' + w.name + '</div></div>';
       var yTxt = (y === null || y === undefined) ? '待补' : ((w.yieldApprox ? '≈' : '') + (y > 0 ? '+' : '') + y.toFixed(2) + '%');
       html += '<div class="amt-row"><div class="amt">' + fmt(w.actual) + '</div><div><div class="yk">年化</div><div class="yv ' + cls(y || 0) + '">' + yTxt + '</div></div></div>';
-      html += '<div class="ybar"><i style="width:' + pct + '%;background:' + (COLOR[w.name] || 'var(--accent)') + '"></i></div>';
+      if (y !== null && y !== undefined && ty) {
+        html += '<div class="ybar"><i style="width:' + pct + '%;background:' + (COLOR[w.name] || 'var(--accent)') + '"></i></div>';
+      }
       var sub = (y === null || y === undefined) ? ('年化待补 ／ 目标 ' + (ty ? ty.toFixed(1) + '%' : '无目标'))
         : ('实际 ' + yTxt + ' ／ 目标 ' + (ty ? ty.toFixed(1) + '%' : '无目标') + (w.yieldApprox ? ' · 仅含已知项' : ''));
       html += '<div class="sub">' + sub + '</div>';
