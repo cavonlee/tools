@@ -30,7 +30,8 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
 .net .big{font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.08;margin-top:4px;font-variant-numeric:tabular-nums}
 .net .frow{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
 .net .f{font-size:12px;color:var(--ink3)}
-.pill{font-size:11.5px;padding:3px 8px;border-radius:999px;background:var(--track);color:var(--ink2)}
+.pill{font-size:11.5px;color:var(--ink2)}
+.fv{font-size:13px;font-weight:600}
 .entry{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:.5px solid var(--line);cursor:pointer}
 .entry .txt{font-size:13.5px}
 .entry:first-of-type{border-top:.5px solid var(--line)}
@@ -158,13 +159,20 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
     var byPerson = personSplit(raw, a.liabilities || net.liabilities || 0);
     html += '<div class="net">';
     html += '<div class="lab">净资产</div><div class="big">' + wan(net.total || 0) + '</div>';
-    html += '<div class="frow"><span class="f">自由度</span><span class="pill">' + (d.freedom_pct === undefined ? '—' : (d.freedom_pct > 0 ? '+' : '') + d.freedom_pct.toFixed(1) + '%') + '</span>';
+    var fr = (d.freedom_pct === undefined) ? null : d.freedom_pct;
+    var frTxt = (fr === null) ? '—' : ((fr > 0 ? '+' : '') + fr.toFixed(1) + '%');
+    html += '<div class="frow"><span class="f">自由度</span><span class="fv ' + cls(fr || 0) + '">' + frTxt + '</span>';
     html += '<span class="f">被动 ' + fmt(d.passive_income_monthly || 0) + ' / 支出 ' + fmt(d.monthly_expense || 0) + '</span></div>';
-    html += '<div class="entry" id="eNe"><div class="txt">本月 <span class="' + cls(growth.mom || 0) + '">' + (growth.mom === undefined ? '—' : sign(growth.mom)) + '</span>　·　今年 <span class="' + cls(growth.yoy || 0) + '">' + (growth.yoy === undefined ? '—' : sign(growth.yoy)) + '</span> <span class="f">（自 ' + (growth.since || '—') + ' 起）</span></div><div class="chev" id="cNe"></div></div>';
+    var frPct = (fr === null) ? 0 : Math.max(0, Math.min(100, fr));
+    html += '<div class="ybar" style="margin-top:8px"><i style="width:' + frPct + '%;background:var(--accent)"></i></div>';
+    html += '<div class="sub" style="margin-top:5px">自由度 ' + frTxt + ' ／ 目标 100%（被动收入覆盖支出）</div>';
+    var gPending = growth.pending === true;
+    var gShow = function (v) { return (gPending || v === undefined) ? '—' : sign(v); };
+    html += '<div class="entry" id="eNe"><div class="txt">本月 <span class="' + cls(growth.mom || 0) + '">' + gShow(growth.mom) + '</span>　·　今年 <span class="' + cls(growth.yoy || 0) + '">' + gShow(growth.yoy) + '</span> <span class="f">（自 ' + (growth.since || '—') + ' 起）</span></div><div class="chev" id="cNe"></div></div>';
     html += '<div class="sub-panel" id="pNe"><div class="sub-inner">';
-    html += '<div class="srow"><span class="k">当月</span><span class="' + cls(growth.mom || 0) + '">' + (growth.mom === undefined ? '—' : sign(growth.mom)) + '</span></div>';
-    html += '<div class="srow"><span class="k">今年</span><span class="' + cls(growth.yoy || 0) + '">' + (growth.yoy === undefined ? '—' : sign(growth.yoy)) + '</span></div>';
-    html += '<div class="srow"><span class="k">本月投资盈亏</span><span class="' + cls(growth.invest || 0) + '">' + (growth.invest === undefined ? '—' : sign(growth.invest)) + '</span></div>';
+    html += '<div class="srow"><span class="k">当月</span><span class="' + cls(growth.mom || 0) + '">' + gShow(growth.mom) + '</span></div>';
+    html += '<div class="srow"><span class="k">今年</span><span class="' + cls(growth.yoy || 0) + '">' + gShow(growth.yoy) + '</span></div>';
+    html += '<div class="srow"><span class="k">本月投资盈亏</span><span class="' + cls(growth.invest || 0) + '">' + gShow(growth.invest) + '</span></div>';
     html += '<div style="height:8px"></div>';
     html += '<div class="sec2">按人拆分</div>';
     byPerson.list.forEach(function (p) {
@@ -187,7 +195,9 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
       var yTxt = (y === null || y === undefined) ? '待补' : ((w.yieldApprox ? '≈' : '') + (y > 0 ? '+' : '') + y.toFixed(2) + '%');
       html += '<div class="amt-row"><div class="amt">' + fmt(w.actual) + '</div><div><div class="yk">年化</div><div class="yv ' + cls(y || 0) + '">' + yTxt + '</div></div></div>';
       html += '<div class="ybar"><i style="width:' + pct + '%;background:' + (COLOR[w.name] || 'var(--accent)') + '"></i></div>';
-      html += '<div class="sub">实际 ' + yTxt + ' ／ 目标 ' + (ty ? ty.toFixed(1) + '%' : '无目标') + (w.yieldApprox ? ' · 仅含已知收益项' : '') + '</div>';
+      var sub = (y === null || y === undefined) ? ('年化待补 ／ 目标 ' + (ty ? ty.toFixed(1) + '%' : '无目标'))
+        : ('实际 ' + yTxt + ' ／ 目标 ' + (ty ? ty.toFixed(1) + '%' : '无目标') + (w.yieldApprox ? ' · 仅含已知项' : ''));
+      html += '<div class="sub">' + sub + '</div>';
       html += '<div class="detail"><div class="in">';
       var gm = w.mom;
       html += '<div class="grow"><div class="k">本月增长</div><div class="v ' + cls(gm || 0) + '">' + (gm === undefined ? '待本期录入' : sign(gm)) + '</div></div>';
