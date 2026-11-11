@@ -186,7 +186,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
       html += '<div class="r1"><div class="nm">' + w.name + '</div></div>';
       var yTxt = (y === null || y === undefined) ? '待补' : ((w.yieldApprox ? '≈' : '') + (y > 0 ? '+' : '') + y.toFixed(2) + '%');
       html += '<div class="amt-row"><div class="amt">' + fmt(w.actual) + '</div><div><div class="yk">年化</div><div class="yv ' + cls(y || 0) + '">' + yTxt + '</div></div></div>';
-      html += '<div class="ybar"><i style="width:' + pct + '%"></i></div>';
+      html += '<div class="ybar"><i style="width:' + pct + '%;background:' + (COLOR[w.name] || 'var(--accent)') + '"></i></div>';
       html += '<div class="sub">实际 ' + yTxt + ' ／ 目标 ' + (ty ? ty.toFixed(1) + '%' : '无目标') + (w.yieldApprox ? ' · 仅含已知收益项' : '') + '</div>';
       html += '<div class="detail"><div class="in">';
       var gm = w.mom;
