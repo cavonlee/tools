@@ -123,13 +123,26 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
     var map = {};
     raw.forEach(function (w) {
       var name = MERGE[w.name] || w.name;
-      if (!map[name]) { map[name] = { name: name, actual: 0, target: 0, yield: w.yield_pct, target_yield: w.yield_target_pct, items: [] }; order.push(name); }
-      map[name].actual += w.actual || 0;
+      if (!map[name]) { map[name] = { name: name, actual: 0, target: 0, yield: w.yield_pct, target_yield: w.yield_target_pct, items: [], extra: [] }; order.push(name); }
       map[name].target += w.target || 0;
-      (w.items || []).forEach(function (i) { map[name].items.push({ name: i.name, amount: i.amount, owner: i.owner }); });
       if (w.yield_pct !== null && w.yield_pct !== undefined) map[name].yield = w.yield_pct;
+      (w.items || []).forEach(function (i) {
+        var isExtra = (w.name === '权益类' && i.owner === '静虹');
+        if (isExtra) { map[name].extra.push({ name: i.name, amount: i.amount }); }
+        else { map[name].actual += i.amount || 0; map[name].items.push({ name: i.name, amount: i.amount, owner: i.owner, y: i.yield_pct }); }
+      });
     });
     var wallets = order.map(function (n) { return map[n]; });
+
+    wallets.forEach(function (w) {
+      if (w.yield !== null && w.yield !== undefined) return;
+      var cov = 0, acc = 0;
+      w.items.forEach(function (i) {
+        if (i.y !== null && i.y !== undefined) { cov += i.amount; acc += i.amount * i.y; }
+      });
+      w.yield = (cov / (w.actual || 1) >= 0.5) ? acc / cov : null;
+      if (w.yield && w.name === '另类保障（实物金）') w.yield = 0;
+    });
 
     var net = a.net_worth || {};
     var growth = d.growth || {};
@@ -167,6 +180,9 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
       html += '<div class="grow"><div class="k">本月增长</div><div class="v ' + cls(gm || 0) + '">' + (gm === undefined ? '待本期录入' : sign(gm)) + '</div></div>';
       w.items.forEach(function (i) {
         html += '<div class="it"><span>' + i.name + (i.owner ? '<span class="o">' + i.owner + '</span>' : '') + '</span><span class="n2">' + fmt(i.amount) + '</span></div>';
+      });
+      (w.extra || []).forEach(function (i) {
+        html += '<div class="it" style="opacity:.6"><span>' + i.name + '<span class="o">静虹·单列不进目标</span></span><span class="n2">' + fmt(i.amount) + '</span></div>';
       });
       html += '</div></div></div>';
     });
