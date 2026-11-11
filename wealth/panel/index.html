@@ -137,11 +137,14 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-syst
     wallets.forEach(function (w) {
       if (w.yield !== null && w.yield !== undefined) return;
       var cov = 0, acc = 0;
+      var DEF = { '招行月月宝': 1.43, '招行活钱': 1.43, '保险柜现金': 0, '待申购固收': 0, '实物金': 0, '招行黄金账户': 0 };
       w.items.forEach(function (i) {
-        if (i.y !== null && i.y !== undefined) { cov += i.amount; acc += i.amount * i.y; }
+        var y = (i.y === null || i.y === undefined) ? DEF[i.name] : i.y;
+        if (y !== null && y !== undefined) { cov += i.amount; acc += i.amount * y; }
       });
-      w.yield = (cov > 0) ? acc / cov : null;
-      w.yieldApprox = (cov / (w.actual || 1)) < 0.95;
+      var cover = cov / (w.actual || 1);
+      w.yield = (cover >= 0.5) ? acc / cov : null;
+      w.yieldApprox = cover > 0 && cover < 0.95;
       if (w.name === '另类保障（实物金）') { w.yield = 0; w.yieldApprox = false; }
     });
 
